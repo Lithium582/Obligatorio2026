@@ -179,3 +179,28 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+# Datos y resultados del proyecto
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+outputs/figures/*
+outputs/metrics/*
+outputs/models/*
+!outputs/figures/.gitkeep
+!outputs/metrics/.gitkeep
+!outputs/models/.gitkeep
+
+# Artefactos de LaTeX
+report/*.aux
+report/*.bbl
+report/*.bcf
+report/*.blg
+report/*.fdb_latexmk
+report/*.fls
+report/*.log
+report/*.out
+report/*.run.xml
+report/*.synctex.gz
+report/*.toc
