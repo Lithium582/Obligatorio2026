@@ -23,11 +23,11 @@ estimar la probabilidad de que una reserva hotelera sea cancelada. Cada
 observación representa una reserva y la variable objetivo distingue entre
 reservas canceladas y no canceladas.
 
-El momento exacto de predicción se definirá luego de analizar la disponibilidad
-temporal de las variables. Esta decisión resulta necesaria para asegurar que
-el modelo utilice solamente información que estaría disponible al momento de
-realizar la estimación y para evitar contaminación con información futura
-(«data leakage»).
+El riesgo se estimará inmediatamente después de que la reserva sea confirmada
+y registrada. Este momento permite iniciar acciones preventivas con
+anticipación y utilizar solamente información ya disponible, evitando
+contaminación con datos generados durante la evolución o el desenlace de la
+reserva («data leakage»).
 
 \subsection{Propuesta de valor}
 

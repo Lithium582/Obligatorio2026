@@ -1,5 +1,114 @@
 \section{Datos}
 
-Documentar la fuente, el procedimiento de obtención, la unidad de análisis,
-las variables disponibles, la variable objetivo y las limitaciones del
-dataset.
+\subsection{Fuente y unidad de análisis}
+
+Se utilizaron los conjuntos \texttt{H1} y \texttt{H2} publicados por
+António, de Almeida y Nunes en \textit{Hotel booking demand datasets}.
+Los datos corresponden a reservas reales de dos establecimientos portugueses:
+un resort hotel y un city hotel. La documentación y los datos originales se
+encuentran disponibles junto con la publicación\footnote{\url{https://pmc.ncbi.nlm.nih.gov/articles/PMC6297060/}}.
+
+Cada observación representa una reserva. Los archivos fueron integrados y se
+agregó la variable \texttt{HotelType} para conservar su procedencia. El
+dataset resultante contiene 119.390 reservas y 32 columnas: 31 variables
+originales y el identificador del hotel. El City Hotel aporta 79.330 registros
+(66,45\,\%) y el Resort Hotel 40.060 (33,55\,\%). El período observado se
+extiende desde julio de 2015 hasta agosto de 2017; solamente 2016 contiene los
+doce meses.
+
+La variable objetivo es \texttt{IsCanceled}, que vale uno cuando la reserva
+fue cancelada y cero en caso contrario. Se registran 44.224 cancelaciones
+(37,04\,\%) y 75.166 reservas no canceladas (62,96\,\%). Existe cierto
+desbalance entre las clases, aunque no es extremo.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.72\textwidth]{eda_target_distribution.png}
+    \caption{Distribución de la variable objetivo.}
+    \label{fig:target-distribution}
+\end{figure}
+
+\subsection{Calidad de los datos}
+
+La limpieza inicial eliminó espacios exteriores en variables de texto y
+convirtió la etiqueta \texttt{NULL} en un valor ausente real. Los nulos se
+concentran en \texttt{Company} (112.593), \texttt{Agent} (16.340),
+\texttt{Country} (488) y \texttt{Children} (4). En \texttt{Agent} y
+\texttt{Company} la ausencia parece ser principalmente estructural: una
+agencia o una empresa no intervienen en todas las operaciones. Por este motivo
+no se asumirá que corresponda imputarlas mediante la categoría más frecuente.
+
+Se encontraron 180 reservas sin huéspedes registrados, 715 con cero noches y
+70 que cumplen ambas condiciones. La mayoría presenta estado final
+\texttt{Check-Out}, por lo que se conservaron para un posterior análisis de
+sensibilidad. Entre los valores extremos se destacan un \texttt{ADR} negativo
+de $-6{,}38$ y un máximo de 5400, ampliamente separado del segundo mayor valor,
+510. También se detectaron dos registros con 9 y 10 bebés. La información
+disponible no permite corregir estos casos de forma inequívoca; sus posibles
+tratamientos se compararán durante la ingeniería de variables.
+
+\subsection{Diferencias entre hoteles y comportamiento temporal}
+
+La tasa de cancelación del City Hotel es 41,73\,\%, frente a 27,76\,\% en el
+Resort Hotel. Esta comparación se limita a dos establecimientos concretos:
+\texttt{HotelType} puede resumir diferencias operativas, comerciales y
+geográficas que no fueron registradas directamente.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\textwidth]{eda_cancellation_by_hotel.png}
+    \caption{Volumen de reservas y tasa de cancelación por hotel.}
+    \label{fig:cancellation-by-hotel}
+\end{figure}
+
+El análisis mensual muestra indicios de estacionalidad, especialmente en el
+Resort Hotel, cuya tasa varía aproximadamente entre 15\,\% y 33\,\%. En el
+City Hotel se mantiene aproximadamente entre 37\,\% y 46\,\%. Sin embargo,
+el período contiene un solo año completo; estos resultados se consideran
+patrones descriptivos y no evidencia de un ciclo estable para años futuros.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.94\textwidth]{eda_monthly_seasonality.png}
+    \caption{Volumen medio y tasa de cancelación por mes calendario.}
+    \label{fig:monthly-seasonality}
+\end{figure}
+
+\subsection{Reservas repetidas}
+
+El 33,64\,\% de las filas pertenece a combinaciones exactamente repetidas y
+estos registros concentran el 53,03\,\% de todas las cancelaciones. Su tasa de
+cancelación es 58,39\,\%, frente a 26,22\,\% en las combinaciones únicas. La
+tasa también aumenta con el tamaño del bloque y alcanza 95,58\,\% cuando una
+combinación aparece más de 50 veces.
+
+No se eliminaron estas observaciones: pueden representar reservas diferentes
+pertenecientes a contingentes o bloques gestionados conjuntamente y su peso
+económico es real. Una deduplicación hipotética reduciría la tasa global de
+cancelación de 37,04\,\% a 27,49\,\%, alterando sustancialmente el problema.
+En cambio, la estrategia de validación deberá impedir que reservas relacionadas
+aparezcan simultáneamente en entrenamiento y validación.
+
+\subsection{Disponibilidad temporal y fugas de información}
+
+El modelo principal estimará el riesgo una vez que la reserva haya sido
+confirmada y registrada. En ese momento \texttt{DaysInWaitingList} es
+admisible: se define como la cantidad de días transcurridos en lista de espera
+antes de la confirmación al cliente.
+
+\texttt{ReservationStatus} revela directamente la variable objetivo: todos
+los registros \texttt{Canceled} y \texttt{No-Show} tienen
+\texttt{IsCanceled}=1, mientras que todos los \texttt{Check-Out} tienen valor
+cero. \texttt{ReservationStatusDate} registra la fecha en la que se produjo
+ese desenlace. Ambas variables se excluirán de todos los modelos.
+
+\texttt{AssignedRoomType} y \texttt{BookingChanges} también se excluyen del
+escenario principal porque su valor puede generarse o cambiar después de la
+confirmación. Podrían considerarse en un modelo operativo posterior si se
+definiera un horizonte fijo y pudiera reconstruirse el valor disponible en
+ese momento.
+
+Las decisiones de imputación, tratamiento de extremos, codificación y
+selección de variables no se fijaron durante el análisis exploratorio. Se
+evaluarán de manera reproducible en las etapas de análisis e ingeniería de
+variables.
