@@ -1,4 +1,108 @@
 \section{Metodología}
 
-Justificar la estrategia de validación, el preprocesamiento, el análisis y
-selección de features, los modelos considerados y la métrica principal.
+\subsection{Momento de predicción y disponibilidad de la información}
+
+El sistema estima el riesgo inmediatamente después de que la reserva haya
+sido confirmada y registrada. Esta definición determina qué variables pueden
+utilizarse: cada predictor debe estar disponible en ese instante y no puede
+incorporar información generada durante la evolución o el desenlace de la
+reserva.
+
+Como consecuencia, se excluyeron \texttt{ReservationStatus} y
+\texttt{ReservationStatusDate}, que revelan directamente el resultado. También
+se descartaron \texttt{AssignedRoomType} y \texttt{BookingChanges}, cuyos
+valores pueden definirse o modificarse después de la confirmación. Aunque
+\texttt{DepositType} parece describir una condición inicial, en este dataset
+fue construido a partir de pagos acumulados antes de la llegada o cancelación,
+por lo que no garantiza disponibilidad en el momento elegido. Finalmente,
+\texttt{ADR} fue excluida debido a la ambigüedad temporal de su cálculo, la
+presencia de valores extremos y su asociación marginal débil con el objetivo.
+
+\subsection{Análisis de variables}
+
+Las variables se clasificaron según su naturaleza semántica antes de decidir
+su codificación. Para las categóricas se aplicó una prueba de independencia
+chi-cuadrado y se utilizó la V de Cramér corregida como medida de magnitud de
+la asociación. El valor $p$ no se interpretó como medida de importancia: con
+119.390 observaciones, diferencias pequeñas pueden resultar estadísticamente
+significativas. Los resultados se complementaron con tasas de cancelación por
+categoría y análisis condicionados por hotel, período y repetición de
+combinaciones.
+
+Para las variables numéricas se estudiaron sus distribuciones, valores
+extremos, correlación de Spearman con el objetivo y ROC AUC univariado. Estas
+métricas se emplearon con fines descriptivos y no como un mecanismo automático
+de selección, dado que una variable con señal marginal pequeña puede resultar
+útil mediante relaciones no lineales o interacciones dentro de un modelo.
+
+\subsection{Identificadores de agencia y empresa}
+
+Los identificadores \texttt{Agent} y \texttt{Company} presentan alta
+cardinalidad y aparecen nuevas entidades entre períodos. Utilizarlos de forma
+directa podría inducir al modelo a memorizar actores particulares y dificultar
+su generalización. Además, la ausencia de estos valores es principalmente
+estructural y no equivale a un dato desconocido.
+
+Por este motivo se decidió sustituir ambos identificadores por los indicadores
+binarios \texttt{HasAgent} y \texttt{HasCompany}. De esta manera se conserva
+la distinción operativa entre reservas con y sin intermediación, sin depender
+de la identidad concreta de cada agencia o empresa.
+
+\subsection{Variables candidatas e hipótesis de transformación}
+
+\texttt{Country} se conserva como variable nominal: mostró una asociación
+relevante con la cancelación, aunque parte de ella está relacionada con el
+hotel y con combinaciones repetidas. Se evaluará una representación agrupada o
+un indicador como \texttt{IsDomestic}. Cualquier agrupación informada por el
+objetivo deberá aprenderse exclusivamente con los datos de entrenamiento de
+cada partición para evitar contaminación.
+
+Se propusieron \texttt{TotalGuests}, suma de adultos, niños y bebés, y
+\texttt{TotalNights}, suma de noches de semana y fin de semana. Estas variables
+son interpretables, pero su ROC AUC individual no superó al mejor de sus
+componentes. Por ello se tratarán como candidatas y no reemplazarán inicialmente
+las columnas originales; su aporte se comprobará mediante ablación.
+
+La relación de \texttt{DaysInWaitingList} con la cancelación cambia de
+dirección según el hotel, varía entre años y se debilita al reducir el peso de
+las combinaciones repetidas. El valor numérico se conservará provisionalmente
+para modelos basados en árboles. En modelos lineales se evaluará una versión
+binaria, \texttt{WasOnWaitingList}, junto con su interacción con
+\texttt{HotelType}, en lugar de asumir un efecto lineal común.
+
+Las reservas sin huéspedes o con cero noches se conservaron. Representan una
+proporción pequeña y el análisis exploratorio mostró que pueden corresponder a
+registros operativos válidos. Los pocos valores extremos de cantidad de
+huéspedes y duración tampoco se eliminarán mediante reglas globales; cualquier
+tratamiento se implementará dentro del pipeline y se validará fuera de muestra.
+
+\subsection{Validación y selección de variables}
+
+La presencia de combinaciones repetidas y el alcance temporal del dataset
+impiden utilizar una división aleatoria ingenua como única evidencia de
+generalización. La estrategia definitiva deberá respetar los grupos de
+reservas relacionadas y comprobar estabilidad entre períodos. Su definición
+exacta se completará antes de entrenar y comparar los modelos.
+
+Todas las imputaciones, codificaciones, escalados y transformaciones se
+ajustarán dentro de pipelines utilizando solamente los datos de entrenamiento.
+Las nuevas variables se compararán contra un conjunto base común. La selección
+final considerará ROC AUC fuera de muestra, estabilidad entre particiones e
+interpretabilidad, y se apoyará en experimentos de ablación en lugar de
+decidir únicamente a partir de asociaciones calculadas sobre el dataset
+completo.
+
+\subsection{Modelos y criterio de evaluación}
+
+Se construirá primero un modelo ingenuo de regresión logística, con
+preprocesamiento y búsqueda de hiperparámetros deliberadamente sencillos, para
+establecer una referencia reproducible. Posteriormente se evaluarán regresión
+logística, árbol de decisión, Random Forest, XGBoost, KNN y una red neuronal,
+con el objetivo de comparar familias de modelos lineales, basados en árboles,
+distancia y aprendizaje neuronal.
+
+ROC AUC será la métrica técnica principal porque evalúa el ordenamiento del
+riesgo sin fijar anticipadamente un umbral de decisión. Una vez seleccionado
+el modelo, el umbral se analizará por separado según el costo de los falsos
+positivos, el costo de los falsos negativos y la capacidad disponible para
+realizar acciones preventivas.
