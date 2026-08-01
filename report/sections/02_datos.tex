@@ -41,11 +41,15 @@ no se asumirá que corresponda imputarlas mediante la categoría más frecuente.
 Se encontraron 180 reservas sin huéspedes registrados, 715 con cero noches y
 70 que cumplen ambas condiciones. La mayoría presenta estado final
 \texttt{Check-Out}, por lo que se conservaron para un posterior análisis de
-sensibilidad. Entre los valores extremos se destacan un \texttt{ADR} negativo
-de $-6{,}38$ y un máximo de 5400, ampliamente separado del segundo mayor valor,
-510. También se detectaron dos registros con 9 y 10 bebés. La información
-disponible no permite corregir estos casos de forma inequívoca; sus posibles
-tratamientos se compararán durante la ingeniería de variables.
+sensibilidad. También se detectaron dos registros con 9 y 10 bebés.
+
+La variable \texttt{ADR} presenta un valor negativo de $-6{,}38$ y un máximo
+de 5400, ampliamente separado del segundo mayor valor, 510. Además, fue
+calculada a partir de transacciones de alojamiento sin un corte temporal que
+garantice que represente el precio disponible al confirmar la reserva. Como
+su asociación marginal con el target resultó pequeña, se optó por excluirla:
+el beneficio potencial no compensa el riesgo de contaminación temporal ni la
+complejidad introducida por sus extremos.
 
 \subsection{Diferencias entre hoteles y comportamiento temporal}
 
@@ -101,6 +105,11 @@ los registros \texttt{Canceled} y \texttt{No-Show} tienen
 \texttt{IsCanceled}=1, mientras que todos los \texttt{Check-Out} tienen valor
 cero. \texttt{ReservationStatusDate} registra la fecha en la que se produjo
 ese desenlace. Ambas variables se excluirán de todos los modelos.
+
+\texttt{DepositType} también se excluye. Aunque su nombre puede interpretarse
+como una política contractual, en este dataset fue construida a partir de los
+pagos acumulados antes de la llegada o cancelación. Su valor no está disponible
+de forma consistente inmediatamente después de confirmar la reserva.
 
 \texttt{AssignedRoomType} y \texttt{BookingChanges} también se excluyen del
 escenario principal porque su valor puede generarse o cambiar después de la
