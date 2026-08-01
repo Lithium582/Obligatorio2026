@@ -180,7 +180,6 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 # Datos y resultados del proyecto
-data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
