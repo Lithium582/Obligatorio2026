@@ -1,4 +1,86 @@
 \section{Introducción}
 
-Presentar el problema, su motivación, el objetivo del trabajo y el alcance del
-análisis.
+\subsection{Contexto y motivación}
+
+Las cancelaciones representan una fuente de incertidumbre para la gestión
+hotelera. Una habitación reservada que finalmente no se ocupa puede ocasionar
+una pérdida de ingresos cuando el hotel no dispone de tiempo o demanda
+suficiente para volver a comercializarla. Al mismo tiempo, aplicar medidas
+preventivas sobre todas las reservas puede incrementar los costos operativos,
+reducir el margen o generar fricción con clientes que no tenían intención de
+cancelar.
+
+Disponer anticipadamente de una estimación del riesgo de cancelación puede
+ayudar al hotel a administrar esa incertidumbre. En lugar de intervenir de
+manera indiscriminada, las probabilidades estimadas podrían utilizarse para
+priorizar una capacidad limitada de acciones, como solicitar confirmación,
+ofrecer una alternativa de reprogramación o requerir determinadas garantías.
+
+\subsection{Formulación del problema}
+
+El trabajo plantea un problema de clasificación binaria cuyo objetivo es
+estimar la probabilidad de que una reserva hotelera sea cancelada. Cada
+observación representa una reserva y la variable objetivo distingue entre
+reservas canceladas y no canceladas.
+
+El momento exacto de predicción se definirá luego de analizar la disponibilidad
+temporal de las variables. Esta decisión resulta necesaria para asegurar que
+el modelo utilice solamente información que estaría disponible al momento de
+realizar la estimación y para evitar contaminación con información futura
+(«data leakage»).
+
+\subsection{Propuesta de valor}
+
+La propuesta consiste en utilizar el riesgo estimado para priorizar reservas
+sobre las cuales aplicar una acción preventiva. El modelo no determina por sí
+mismo que una reserva deba ser modificada o rechazada, sino que aporta
+información para apoyar una decisión operativa.
+
+El valor potencial del sistema depende tanto de su capacidad predictiva como
+de la efectividad y el costo de la acción elegida. Un falso negativo representa
+una oportunidad perdida de intervenir sobre una reserva que finalmente se
+cancela. Un falso positivo implica actuar innecesariamente sobre una reserva
+que se habría concretado. Por este motivo, la evaluación no se limitará a una
+métrica técnica, sino que incorporará distintos escenarios de capacidad,
+costos y efectividad.
+
+\subsection{Objetivos}
+
+El objetivo general es desarrollar y evaluar un sistema de clasificación que
+permita identificar reservas con riesgo de cancelación y analizar si su uso
+puede mejorar el resultado esperado frente a políticas sin priorización o
+basadas en reglas simples.
+
+Los objetivos específicos son:
+
+\begin{itemize}
+    \item evaluar la calidad, estructura y distribución de los datos;
+    \item identificar y excluir variables que produzcan contaminación con
+    información futura;
+    \item analizar la relación entre las variables disponibles y la
+    cancelación de las reservas;
+    \item diseñar un preprocesamiento reproducible mediante pipelines;
+    \item formular y evaluar nuevas variables sustentadas en hipótesis sobre
+    el problema;
+    \item establecer baselines y comparar diferentes familias de modelos;
+    \item ajustar los hiperparámetros de los modelos más prometedores;
+    \item analizar la importancia y el efecto de las variables sobre las
+    predicciones;
+    \item seleccionar un umbral de decisión coherente con los costos del
+    negocio; y
+    \item comparar el valor esperado del modelo con estrategias alternativas
+    de intervención.
+\end{itemize}
+
+\subsection{Alcance}
+
+El estudio se desarrollará sobre datos históricos de reservas de dos hoteles
+reales. Se compararán modelos lineales, modelos basados en árboles, métodos
+basados en distancia y una red neuronal, utilizando una estrategia común de
+validación.
+
+El análisis económico se presentará mediante escenarios, dado que el conjunto
+de datos no registra el costo real de una intervención ni su efecto causal
+sobre la cancelación. En consecuencia, los resultados permitirán evaluar el
+potencial de una política de priorización, pero no demostrar que una acción
+específica evita cancelaciones en un entorno productivo.
