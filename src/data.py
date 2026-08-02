@@ -109,3 +109,26 @@ def make_train_validation_split(
         random_state=random_state,
         stratify=stratify_values,
     )
+
+
+def make_temporal_holdout_split(X, y, period_values, validation_period):
+    """Separa desarrollo y validación utilizando uno o más períodos futuros."""
+    period_values = pd.Series(period_values, index=X.index)
+    validation_periods = (
+        set(validation_period)
+        if isinstance(validation_period, (list, tuple, set))
+        else {validation_period}
+    )
+    validation_mask = period_values.isin(validation_periods)
+
+    if not validation_mask.any() or validation_mask.all():
+        raise ValueError(
+            "La selección temporal debe producir conjuntos de desarrollo y validación."
+        )
+
+    return (
+        X.loc[~validation_mask].copy(),
+        X.loc[validation_mask].copy(),
+        y.loc[~validation_mask].copy(),
+        y.loc[validation_mask].copy(),
+    )

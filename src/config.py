@@ -18,6 +18,6 @@ REPORT_TABLES_DIR = REPORT_DIR / "tables"
 
 RANDOM_STATE = 42
 
-# Completar cuando se defina el problema.
-TARGET_COL = None
+# Variable objetivo del problema de cancelación hotelera.
+TARGET_COL = "IsCanceled"
 ID_COL = None

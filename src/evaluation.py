@@ -11,6 +11,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import (
     GridSearchCV,
     KFold,
+    StratifiedGroupKFold,
     StratifiedKFold,
     cross_val_score,
 )
@@ -34,6 +35,18 @@ def get_cross_validation(
     if task_type == "regression":
         return KFold(**common)
     raise ValueError("task_type debe ser 'classification' o 'regression'.")
+
+
+def get_stratified_group_cross_validation(
+    n_splits=5,
+    random_state=RANDOM_STATE,
+):
+    """Crea folds estratificados sin separar observaciones del mismo grupo."""
+    return StratifiedGroupKFold(
+        n_splits=n_splits,
+        shuffle=True,
+        random_state=random_state,
+    )
 
 
 def cross_validate_model(
@@ -81,12 +94,15 @@ def run_grid_search(
     n_jobs=-1,
     refit=True,
     return_train_score=True,
+    cv=None,
+    groups=None,
 ):
     """Ejecuta una búsqueda usando los mismos folds que el resto del proyecto."""
-    cv = get_cross_validation(
-        task_type=task_type,
-        n_splits=n_splits,
-    )
+    if cv is None:
+        cv = get_cross_validation(
+            task_type=task_type,
+            n_splits=n_splits,
+        )
     search = GridSearchCV(
         estimator=estimator,
         param_grid=param_grid,
@@ -96,7 +112,7 @@ def run_grid_search(
         refit=refit,
         return_train_score=return_train_score,
     )
-    search.fit(X, y)
+    search.fit(X, y, groups=groups)
     return search
 
 
