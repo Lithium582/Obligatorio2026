@@ -57,12 +57,15 @@ def cross_validate_model(
     task_type="classification",
     n_splits=5,
     n_jobs=-1,
+    cv=None,
+    groups=None,
 ):
     """Evalúa un estimador con una estrategia común de validación."""
-    cv = get_cross_validation(
-        task_type=task_type,
-        n_splits=n_splits,
-    )
+    if cv is None:
+        cv = get_cross_validation(
+            task_type=task_type,
+            n_splits=n_splits,
+        )
     return cross_val_score(
         estimator,
         X,
@@ -70,6 +73,7 @@ def cross_validate_model(
         scoring=scoring,
         cv=cv,
         n_jobs=n_jobs,
+        groups=groups,
     )
 
 

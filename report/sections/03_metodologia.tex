@@ -76,6 +76,15 @@ registros operativos válidos. Los pocos valores extremos de cantidad de
 huéspedes y duración tampoco se eliminarán mediante reglas globales; cualquier
 tratamiento se implementará dentro del pipeline y se validará fuera de muestra.
 
+El análisis de redundancia posterior al baseline no encontró multicolinealidad
+relevante entre las variables numéricas originales: el mayor VIF fue 1,52. La
+principal redundancia apareció entre \texttt{ArrivalDateMonth} y
+\texttt{ArrivalDateWeekNumber}, con razón de correlación
+$\eta=0{,}9951$. Como mes, año y día permiten una representación temporal más
+interpretable, \texttt{ArrivalDateWeekNumber} se excluyó de los conjuntos
+mejorados. Se mantuvo en el baseline histórico para preservar la
+reproducibilidad de ese experimento.
+
 \subsection{Validación y selección de variables}
 
 La presencia de combinaciones repetidas y el alcance temporal del dataset
