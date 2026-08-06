@@ -1,5 +1,96 @@
 \section{Resultados}
 
-Comparar los experimentos de manera consistente. Incluir tanto el rendimiento
-promedio como su variabilidad y separar los resultados de validación de la
-evaluación final.
+\subsection{Baseline técnico}
+
+El holdout temporal contiene 40.687 reservas de enero a agosto de 2017, con
+una tasa de cancelación de 38,70\,\%. El conjunto de desarrollo contiene
+78.703 reservas de 2015 y 2016, con una tasa de 36,19\,\%.
+
+El \texttt{DummyClassifier} asigna a todas las observaciones la probabilidad
+previa de cancelación del conjunto de desarrollo. Como esta probabilidad es
+inferior a 0,5, con dicho umbral predice siempre la clase mayoritaria. Su
+accuracy de 0,6130 no implica capacidad predictiva: no detecta ninguna
+cancelación y su ROC AUC es 0,5.
+
+La búsqueda de regresión logística seleccionó $C=10$ y pesos de clase
+balanceados. El ROC AUC medio de validación cruzada agrupada fue 0,8925, con
+desviación estándar 0,0036. Sobre el holdout temporal descendió a 0,8422. La
+baja dispersión entre folds indica estabilidad interna, pero la diferencia
+frente a 2017 muestra que la generalización temporal es más exigente.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultados del baseline sobre el holdout temporal.}
+    \label{tab:baseline-results}
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Modelo & ROC AUC & Accuracy & Precision & Recall & F1 \\
+        \midrule
+        Dummy prior & 0,5000 & 0,6130 & 0,0000 & 0,0000 & 0,0000 \\
+        Regresión logística & 0,8422 & 0,7061 & 0,5798 & 0,8740 & 0,6971 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Con umbral 0,5, la regresión logística detectó 13.761 de las 15.745
+cancelaciones. La matriz contiene 14.967 verdaderos negativos, 9.975 falsos
+positivos, 1.984 falsos negativos y 13.761 verdaderos positivos. El recall
+elevado es coherente con los pesos balanceados, pero se obtiene a costa de una
+cantidad considerable de falsos positivos.
+
+\subsection{Cancelaciones críticas}
+
+Dentro del holdout se identificaron 348 \texttt{No-Show} y 1.250
+cancelaciones ocurridas como máximo siete días antes de la llegada: 1.598
+eventos críticos en total. El baseline detectó 1.179 y omitió 419, alcanzando
+un recall crítico de 73,78\,\%.
+
+El valor bruto estimado de los eventos críticos fue 540.098,62 unidades
+monetarias. El modelo identificó 419.003,64 (77,58\,\%) y dejó sin identificar
+121.094,98. Estos valores representan exposición bruta bajo los supuestos
+definidos, no ingresos efectivamente perdidos o recuperados.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Evaluación operativa del baseline con umbral 0,5.}
+    \label{tab:baseline-operational}
+    \begin{tabular}{lr}
+        \toprule
+        Indicador & Resultado \\
+        \midrule
+        Eventos críticos & 1.598 \\
+        Eventos críticos detectados & 1.179 \\
+        Recall crítico & 73,78\,\% \\
+        Intervenciones & 23.736 \\
+        Intervenciones sobre casos no críticos & 22.557 \\
+        Precisión de intervención crítica & 4,97\,\% \\
+        Valor crítico capturado & 77,58\,\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Intervenir sobre 23.736 reservas equivale al 58,34\,\% del holdout. Una
+selección aleatoria de igual tamaño detectaría en promedio aproximadamente 932
+eventos críticos, frente a los 1.179 del modelo. El lift observado es 1,2647:
+la regresión logística identifica alrededor de 26,5\,\% más eventos críticos
+que una política aleatoria con la misma capacidad.
+
+\subsection{Escenario económico ilustrativo}
+
+Como comprobación de la metodología se evaluó un escenario que supone pérdida
+del 100\,\% del valor bruto de cada evento crítico, costo de 10 unidades por
+intervención, efectividad de 25\,\% y costo adicional nulo para los casos no
+críticos. Estos parámetros son ilustrativos y no fueron observados en los
+datos.
+
+Bajo dichos supuestos, no intervenir representa 540.098,62 unidades de costo
+estimado y aplicar la política del baseline representa 672.707,71. El ahorro esperado es negativo en 132.609,09 unidades
+\SI{-24,55}{\percent}. Con ese costo de intervención, la efectividad mínima para
+alcanzar el punto de equilibrio sería 56,65\,\%.
+
+Por lo tanto, la política basada en el baseline y el umbral 0,5 no resulta
+conveniente bajo el escenario analizado. Esta conclusión no se generaliza a
+todo uso de modelos predictivos: el baseline contiene señal y supera la
+selección aleatoria, pero distribuye las intervenciones sobre demasiadas
+reservas. Las siguientes etapas evaluarán si nuevas variables, otros modelos y
+una política de capacidad limitada permiten concentrar mejor el riesgo.

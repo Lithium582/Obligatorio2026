@@ -80,9 +80,16 @@ tratamiento se implementará dentro del pipeline y se validará fuera de muestra
 
 La presencia de combinaciones repetidas y el alcance temporal del dataset
 impiden utilizar una división aleatoria ingenua como única evidencia de
-generalización. La estrategia definitiva deberá respetar los grupos de
-reservas relacionadas y comprobar estabilidad entre períodos. Su definición
-exacta se completará antes de entrenar y comparar los modelos.
+generalización. Se utilizaron las reservas de 2015 y 2016 como conjunto de
+desarrollo y se reservó el período enero--agosto de 2017 como holdout temporal.
+Este holdout aproxima el desempeño sobre observaciones posteriores, aunque no
+representa un año calendario completo.
+
+La selección de hiperparámetros dentro del conjunto de desarrollo utilizó
+cinco particiones de \texttt{StratifiedGroupKFold}. Los grupos se construyeron
+a partir de combinaciones idénticas de predictores, de modo que las
+repeticiones exactas no aparecieran simultáneamente en entrenamiento y
+validación interna. El holdout temporal no participó en la selección.
 
 Todas las imputaciones, codificaciones, escalados y transformaciones se
 ajustarán dentro de pipelines utilizando solamente los datos de entrenamiento.
@@ -92,11 +99,47 @@ interpretabilidad, y se apoyará en experimentos de ablación en lugar de
 decidir únicamente a partir de asociaciones calculadas sobre el dataset
 completo.
 
+\subsection{Baseline y preprocesamiento}
+
+Se establecieron dos referencias iniciales. Un \texttt{DummyClassifier} con
+estrategia \texttt{prior} representa el desempeño sin aprendizaje predictivo.
+La segunda referencia es una regresión logística entrenada sobre el conjunto
+original depurado, antes de incorporar nuevas variables.
+
+Las variables numéricas se imputaron por mediana y se estandarizaron. Las
+categóricas se imputaron por moda y se codificaron mediante One-Hot Encoding,
+ignorando categorías desconocidas en validación. Todas las operaciones se
+ajustaron dentro de un \textit{pipeline}. La búsqueda ligera comparó
+$C\in\{0{,}1,1,10\}$ y \texttt{class\_weight} con valores \texttt{None} y
+\texttt{balanced}, utilizando ROC AUC como criterio de selección.
+
+\subsection{Evaluación operativa y valor estimado}
+
+El modelo conserva como objetivo cualquier cancelación. Para aproximar su
+utilidad operativa se definió además un evento crítico: un \texttt{No-Show} o
+una cancelación registrada entre cero y siete días antes de la llegada. Esta
+clasificación utiliza \texttt{ReservationStatus} y
+\texttt{ReservationStatusDate} únicamente después de predecir; estas variables
+no ingresan al modelo.
+
+El valor bruto de una reserva se aproximó como
+
+\[
+    \text{EstimatedBookingValue}
+    = \text{ADR}\times\text{TotalNights}.
+\]
+
+Esta cantidad no constituye una pérdida contable observada, porque el dataset
+no registra pagos, penalizaciones, reventa de habitaciones ni costos evitados.
+El registro con \texttt{ADR}=5400 y el único ADR negativo se excluyeron de la
+valoración. Para comparar políticas se consideraron parámetros explícitos de
+recuperación del valor, costo por intervención, costo adicional de intervenir
+sobre casos no críticos y efectividad de la acción.
+
 \subsection{Modelos y criterio de evaluación}
 
-Se construirá primero un modelo ingenuo de regresión logística, con
-preprocesamiento y búsqueda de hiperparámetros deliberadamente sencillos, para
-establecer una referencia reproducible. Posteriormente se evaluarán regresión
+El baseline se construyó con una regresión logística, preprocesamiento
+reproducible y una búsqueda deliberadamente pequeña. Posteriormente se evaluarán regresión
 logística, árbol de decisión, Random Forest, XGBoost, KNN y una red neuronal,
 con el objetivo de comparar familias de modelos lineales, basados en árboles,
 distancia y aprendizaje neuronal.
