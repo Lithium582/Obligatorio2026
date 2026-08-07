@@ -38,6 +38,69 @@ positivos, 1.984 falsos negativos y 13.761 verdaderos positivos. El recall
 elevado es coherente con los pesos balanceados, pero se obtiene a costa de una
 cantidad considerable de falsos positivos.
 
+\subsection{Primer lote de ingeniería de variables}
+
+La comparación se realizó exclusivamente mediante validación cruzada agrupada
+sobre 2015--2016. Eliminar \texttt{ArrivalDateWeekNumber} produjo una caída de
+0,000168 respecto al baseline histórico, considerada marginal frente a la
+reducción de redundancia temporal.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Comparación combinada del primer lote para regresión logística.}
+    \label{tab:first-feature-batch}
+    \begin{tabular}{lrrr}
+        \toprule
+        Conjunto & Features & ROC AUC CV & Desviación \\
+        \midrule
+        Base depurada & 24 & 0,892322 & 0,003538 \\
+        Baseline histórico & 25 & 0,892490 & 0,003574 \\
+        Primer lote parsimonioso & 25 & 0,893810 & 0,003613 \\
+        Candidato redundante & 29 & 0,894158 & 0,003896 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+El conjunto parsimonioso superó ambas referencias en los cinco folds. El
+candidato redundante lo superó solamente en 0,000348 y requirió cuatro
+variables adicionales con asociaciones casi determinísticas. Se seleccionó
+por tanto el conjunto parsimonioso, que conserva aproximadamente el 79\,\% de
+la mejora adicional del candidato redundante sobre la base depurada y ofrece
+coeficientes más interpretables. El holdout temporal no se consultó durante
+esta decisión.
+
+\subsection{Segundo lote de ingeniería de variables}
+
+La transformación de \texttt{LeadTime} produjo la mejora principal. Agregar
+\texttt{log1p(LeadTime)} al conjunto parsimonioso elevó el ROC AUC medio a
+0,904913. \texttt{HasSpecialRequests} también mejoró de forma consistente y,
+al combinarlo con ambas representaciones de \texttt{LeadTime}, se alcanzó
+0,908554. La alternativa que reemplaza el valor continuo por bandas operativas
+y agrega \texttt{HasSpecialRequests} obtuvo 0,908447, con desviación 0,004005.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Comparación combinada del segundo lote para regresión logística.}
+    \label{tab:second-feature-batch}
+    \begin{tabular}{lrrr}
+        \toprule
+        Configuración & Features & ROC AUC CV & Desviación \\
+        \midrule
+        Primer lote parsimonioso & 25 & 0,893810 & 0,003613 \\
+        \texttt{LeadTime} + logaritmo & 26 & 0,904913 & 0,004321 \\
+        \texttt{LeadTime} + logaritmo + solicitudes & 27 & 0,908554 & 0,004228 \\
+        Bandas de anticipación + solicitudes & 26 & 0,908447 & 0,004005 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+La diferencia entre las dos mejores configuraciones fue de sólo 0,000107. Se
+seleccionó la alternativa basada en bandas porque ofrece una interpretación
+operativa directa, evita conservar simultáneamente dos representaciones muy
+asociadas de \texttt{LeadTime} y presenta una dispersión ligeramente menor.
+La mejora frente al primer lote fue de 0,014637 y se observó en los cinco
+folds. El holdout temporal de 2017 permaneció reservado.
+
 \subsection{Cancelaciones críticas}
 
 Dentro del holdout se identificaron 348 \texttt{No-Show} y 1.250

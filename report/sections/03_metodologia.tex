@@ -145,6 +145,47 @@ valoración. Para comparar políticas se consideraron parámetros explícitos de
 recuperación del valor, costo por intervención, costo adicional de intervenir
 sobre casos no críticos y efectividad de la acción.
 
+\subsection{Primer lote de ingeniería de variables}
+
+Las variables nuevas se evaluaron con la regresión logística y sus
+hiperparámetros fijos, manteniendo los mismos folds y grupos. El holdout de
+2017 no participó en la selección. Se estudiaron sumas de huéspedes y noches,
+un indicador doméstico, representaciones alternativas del historial y una
+interacción entre lista de espera y tipo de hotel.
+
+\texttt{TotalGuests} y \texttt{TotalNights} no mejoraron ROC AUC y generaron
+dependencias lineales exactas con sus componentes. \texttt{IsDomestic} resultó
+redundante con la categoría portuguesa de \texttt{Country}. Para historial y
+lista de espera se realizaron ablaciones que compararon agregar indicadores,
+ratios y reemplazar las variables originales.
+
+El conjunto lineal seleccionado reemplaza \texttt{PreviousCancellations} por
+\texttt{PreviousCancellationRate}, y \texttt{DaysInWaitingList} por
+\texttt{WasOnWaitingList} y \texttt{CityHotelWasOnWaitingList}. También
+excluye \texttt{ArrivalDateWeekNumber}. No incorpora \texttt{TotalGuests},
+\texttt{TotalNights}, \texttt{IsDomestic} ni
+\texttt{HasPreviousCancellation}. Esta selección es específica de regresión
+logística; las representaciones útiles para árboles se evaluarán por separado.
+
+\subsection{Segundo lote de ingeniería de variables}
+
+El segundo lote estudió representaciones no lineales sobre el conjunto
+parsimonioso. Se evaluaron codificaciones cíclicas del mes y del día de la
+semana, una transformación logarítmica y bandas operativas de
+\texttt{LeadTime}, y los indicadores \texttt{HasSpecialRequests} y
+\texttt{HasParking}. Cada familia se comparó primero de forma aislada y las
+mejoras consistentes se combinaron posteriormente, manteniendo fijos el
+modelo, los grupos y las particiones de validación.
+
+Para regresión logística se seleccionó \texttt{LeadTimeBand} en reemplazo de
+\texttt{LeadTime}. Sus intervalos son: mismo día, 1--7, 8--30, 31--90,
+91--180, 181--365 y más de 365 días. Esta representación permite asignar un
+efecto diferente a cada rango sin imponer una relación lineal común. También
+se agregó \texttt{HasSpecialRequests}, indicador de al menos una solicitud
+especial, conservando el conteo original. La selección es específica del
+modelo lineal y no se trasladará automáticamente a modelos capaces de aprender
+cortes no lineales sobre la variable continua.
+
 \subsection{Modelos y criterio de evaluación}
 
 El baseline se construyó con una regresión logística, preprocesamiento
