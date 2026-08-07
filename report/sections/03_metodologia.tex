@@ -227,6 +227,22 @@ una búsqueda final sobre el conjunto de 17 variables, comparando profundidades
 8, 10, 12 y 14 y hojas mínimas de 75, 100, 150 y 250. La evaluación de 2017 no
 se utilizó para reajustar el modelo.
 
+\subsection{Random Forest}
+
+Random Forest comparó la base depurada de 24 variables con la poda de 17
+mediante un bosque fijo y los mismos folds construidos sobre el conjunto más
+reducido. El conjunto ganador se utilizó en una búsqueda sobre profundidad,
+tamaño mínimo de hoja y proporción de variables candidatas por split. Los
+pesos se calcularon en cada muestra bootstrap mediante
+\texttt{balanced\_subsample}.
+
+La búsqueda original conservó 12 configuraciones para documentar la
+exploración. Debido a su costo, una grilla de confirmación comparó las dos
+profundidades relevantes con 100 árboles, manteniendo
+\texttt{max\_features=0.5} y \texttt{min\_samples\_leaf=5}. La reducción del
+número de árboles se utilizó para abaratar la búsqueda; el holdout no participó
+en la selección ni se utilizó para una nueva iteración.
+
 \subsection{Modelos y criterio de evaluación}
 
 El baseline se construyó con una regresión logística, preprocesamiento

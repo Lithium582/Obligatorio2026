@@ -181,6 +181,40 @@ como herramienta para comprender y reducir variables, pero no como el mejor
 modelo temporal. El resultado del holdout no se utilizó para una nueva
 búsqueda.
 
+\subsection{Random Forest}
+
+Con un bosque fijo, la base depurada de 24 variables obtuvo ROC AUC medio
+0,926422 frente a 0,925012 del conjunto podado y ganó cuatro de los cinco
+folds. Esto indica que algunas variables poco útiles para un árbol individual
+pueden contribuir a la diversidad del ensemble.
+
+La búsqueda amplia seleccionó profundidad libre,
+\texttt{max\_features=0.5} y \texttt{min\_samples\_leaf=5}. La grilla de
+confirmación con 100 árboles reprodujo la selección y alcanzó ROC AUC CV
+0,941260, sólo 0,000307 menos que la ejecución con 300 árboles. El ROC AUC de
+entrenamiento fue 0,987653, con gap train--CV de 0,046393.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultado temporal de Random Forest.}
+    \label{tab:random-forest-results}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        Modelo & ROC AUC CV & ROC AUC 2017 & Accuracy & Precision & Recall & F1 \\
+        \midrule
+        LR mejorada & 0,908557 & 0,855017 & 0,739032 & 0,620290 & 0,839568 & 0,713461 \\
+        Árbol podado & 0,927092 & 0,838694 & 0,765822 & 0,723456 & 0,639187 & 0,678716 \\
+        Random Forest & 0,941260 & 0,842641 & 0,769312 & 0,748885 & 0,607621 & 0,670898 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Random Forest presentó el mejor Accuracy y Precision de los modelos evaluados,
+pero detectó sólo el 60,76\,\% de las cancelaciones. El ROC AUC cayó a 0,842641
+en 2017, generando un gap temporal de 0,098618, y permaneció por debajo de
+Logistic Regression mejorada tanto en ROC AUC temporal como en F1. La
+configuración se cerró sin reajustarla a partir del holdout.
+
 \subsection{Cancelaciones críticas}
 
 Dentro del holdout se identificaron 348 \texttt{No-Show} y 1.250
