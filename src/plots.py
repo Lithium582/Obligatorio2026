@@ -15,7 +15,7 @@ def plot_confusion_matrix(
     matrix = confusion_matrix(y, predictions)
 
     display = ConfusionMatrixDisplay(confusion_matrix=matrix)
-    display.plot()
+    display.plot(values_format="d")
     plt.title(title)
     plt.show()
     return display

@@ -217,22 +217,22 @@ configuración se cerró sin reajustarla a partir del holdout.
 
 \subsection{XGBoost}
 
-La primera grilla mostr? una mejora clara al aumentar la profundidad de 3 a 5
-y la segunda confirm? una nueva mejora con profundidad 7. La mayor media de CV
-fue 0,938565 con \texttt{min\_child\_weight=5}. Sin embargo, se seleccion? el
-valor 15 porque redujo el gap train--validaci?n de 0,014283 a 0,013085 a cambio
-de s?lo 0,000288 de ROC AUC.
+La primera grilla mostró una mejora clara al aumentar la profundidad de 3 a 5
+y la segunda confirmó una nueva mejora con profundidad 7. La mayor media de CV
+fue 0,938565 con \texttt{min\_child\_weight=5}. Sin embargo, se seleccionó el
+valor 15 porque redujo el gap train--validación de 0,014283 a 0,013085 a cambio
+de sólo 0,000288 de ROC AUC.
 
 \begin{table}[htbp]
     \centering
-    \caption{Comparaci?n t?cnica de los modelos finales sobre 2017.}
+    \caption{Comparación técnica de los modelos finales sobre 2017.}
     \label{tab:xgboost-results}
     \begin{tabular}{lrrrrrr}
         \toprule
         Modelo & ROC AUC CV & ROC AUC 2017 & Accuracy & Precision & Recall & F1 \\
         \midrule
         LR mejorada & 0,908557 & 0,855017 & 0,739032 & 0,620290 & 0,839568 & 0,713461 \\
-        ?rbol podado & 0,927092 & 0,838694 & 0,765822 & 0,723456 & 0,639187 & 0,678716 \\
+        árbol podado & 0,927092 & 0,838694 & 0,765822 & 0,723456 & 0,639187 & 0,678716 \\
         Random Forest & 0,941260 & 0,842641 & 0,769312 & 0,748885 & 0,607621 & 0,670898 \\
         XGBoost & 0,938277 & 0,867291 & 0,781724 & 0,737476 & 0,676913 & 0,705898 \\
         \bottomrule
@@ -240,25 +240,25 @@ de s?lo 0,000288 de ROC AUC.
 \end{table}
 
 XGBoost obtuvo el mayor ROC AUC temporal y Accuracy. Su gap CV--2017 fue
-0,070986, menor que los observados en el ?rbol y Random Forest. Con threshold
-0,5 present? un compromiso m?s equilibrado entre Precision y Recall que los
-otros modelos basados en ?rboles. Logistic Regression mantuvo el mejor Recall
-y un F1 ligeramente superior, por lo que la decisi?n operativa final deber?
-comparar sus probabilidades bajo una pol?tica de threshold y costos com?n.
+0,070986, menor que los observados en el árbol y Random Forest. Con threshold
+0,5 presentó un compromiso más equilibrado entre Precision y Recall que los
+otros modelos basados en árboles. Logistic Regression mantuvo el mejor Recall
+y un F1 ligeramente superior, por lo que la decisión operativa final deberá
+comparar sus probabilidades bajo una política de threshold y costos común.
 
 \subsection{KNN}
 
-La b?squeda de KNN se realiz? sobre una muestra agrupada de 27.137 reservas de
-desarrollo para limitar el costo del c?lculo de distancias. Se compararon 25 y
-75 vecinos con ponderaci?n uniforme o por distancia, utilizando tres folds. La
-configuraci?n seleccionada emple? 75 vecinos ponderados y obtuvo ROC AUC medio
-0,876338, con desviaci?n 0,008868. Esta estimaci?n sobre una muestra no es
-directamente comparable con las validaciones completas de los dem?s modelos.
+La búsqueda de KNN se realizó sobre una muestra agrupada de 27.137 reservas de
+desarrollo para limitar el costo del cálculo de distancias. Se compararon 25 y
+75 vecinos con ponderación uniforme o por distancia, utilizando tres folds. La
+configuración seleccionada empleó 75 vecinos ponderados y obtuvo ROC AUC medio
+0,876338, con desviación 0,008868. Esta estimación sobre una muestra no es
+directamente comparable con las validaciones completas de los demás modelos.
 
 El ROC AUC de entrenamiento cercano a uno de las configuraciones ponderadas no
-se tom? como evidencia convencional de sobreajuste: al predecir el propio
-entrenamiento, cada observaci?n es su vecina a distancia cero. La comparaci?n
-se bas? en los folds no observados y la evaluaci?n temporal posterior.
+se tomó como evidencia convencional de sobreajuste: al predecir el propio
+entrenamiento, cada observación es su vecina a distancia cero. La comparación
+se basó en los folds no observados y la evaluación temporal posterior.
 
 \begin{table}[htbp]
     \centering
@@ -273,12 +273,47 @@ se bas? en los folds no observados y la evaluaci?n temporal posterior.
     \end{tabular}
 \end{table}
 
-KNN present? el menor ROC AUC temporal de los modelos entrenados. Aunque su
-Precision fue alta, omiti? m?s de cuatro de cada diez cancelaciones. La p?rdida
+KNN presentó el menor ROC AUC temporal de los modelos entrenados. Aunque su
+Precision fue alta, omitió más de cuatro de cada diez cancelaciones. La pérdida
 de capacidad de ordenamiento es coherente con la dificultad de definir
-cercan?a en el espacio de alta dimensi?n producido por One-Hot Encoding. Por
-este motivo no se ampli? la grilla y el modelo se conserva como comparaci?n de
+cercanía en el espacio de alta dimensión producido por One-Hot Encoding. Por
+este motivo no se amplió la grilla y el modelo se conserva como comparación de
 una familia basada en distancia, no como candidato final.
+
+\subsection{Red neuronal MLP}
+
+La red inicial $(32,16)$ obtuvo ROC AUC CV 0,930352. Activar early stopping
+mejoró los cinco folds, elevó la media a 0,933210, redujo el gap train--CV de
+0,034510 a 0,025188 y disminuyó el entrenamiento medio de 150 a 64,6 épocas.
+La comparación de arquitecturas seleccionó una única capa de 32 neuronas. La
+regularización elegida fue \texttt{alpha=0.01}; luego se conservaron learning
+rate 0,001 y batch 64 tras confirmar su interacción.
+
+La configuración final alcanzó ROC AUC CV 0,936075, con desviación 0,002251 y
+gap train--CV 0,014919. El ajuste completo se detuvo después de 55 épocas. En
+el holdout temporal obtuvo los siguientes resultados:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultado temporal de la red neuronal MLP.}
+    \label{tab:mlp-results}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        Modelo & ROC AUC CV & ROC AUC 2017 & Accuracy & Precision & Recall & F1 \\
+        \midrule
+        MLP & 0,936075 & 0,845721 & 0,627129 & 0,509632 & 0,964433 & 0,666872 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+El gap CV--2017 fue 0,090354. Con threshold 0,5 la red detectó 15.185 de las
+15.745 cancelaciones y omitió solamente 560, pero produjo 14.611 falsos
+positivos. Por ello presentó el mayor Recall de los modelos ajustados y una
+Precision baja. Su ROC AUC temporal quedó por debajo de Logistic Regression y
+XGBoost: cambiar el threshold puede modificar el intercambio entre Precision y
+Recall, pero no mejora la capacidad de ordenamiento medida por ROC AUC. La red
+se conserva como comparación de una familia neuronal y no como candidato
+técnico principal.
 
 \subsection{Cancelaciones críticas}
 

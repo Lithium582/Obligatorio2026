@@ -245,35 +245,58 @@ en la selección ni se utilizó para una nueva iteración.
 
 \subsection{XGBoost}
 
-XGBoost utiliz? el conjunto podado de 17 variables, que obtuvo una ventaja
-m?nima frente a la base depurada con una configuraci?n fija y reduce el ruido
+XGBoost utilizó el conjunto podado de 17 variables, que obtuvo una ventaja
+mínima frente a la base depurada con una configuración fija y reduce el ruido
 en un modelo de alta capacidad. Se fijaron 150 estimadores, tasa de aprendizaje
-0,08, muestreo de filas y columnas de 0,8 y regularizaci?n L2 de 5. La raz?n
-entre clases de desarrollo se utiliz? como \texttt{scale\_pos\_weight}.
+0,08, muestreo de filas y columnas de 0,8 y regularización L2 de 5. La razón
+entre clases de desarrollo se utilizó como \texttt{scale\_pos\_weight}.
 
-La b?squeda se dividi? en dos grillas peque?as para evitar una exploraci?n
+La búsqueda se dividió en dos grillas pequeñas para evitar una exploración
 combinatoria costosa. Primero se compararon profundidades 3 y 5 con
-\texttt{min\_child\_weight} 5 y 15; despu?s se extendi? solamente la profundidad
-a 7. La configuraci?n se seleccion? usando exclusivamente validaci?n cruzada
-y considerando conjuntamente media, dispersi?n y gap train--validaci?n. El
-holdout temporal se evalu? una sola vez despu?s de cerrar la decisi?n.
+\texttt{min\_child\_weight} 5 y 15; después se extendió solamente la profundidad
+a 7. La configuración se seleccionó usando exclusivamente validación cruzada
+y considerando conjuntamente media, dispersión y gap train--validación. El
+holdout temporal se evaluó una sola vez después de cerrar la decisión.
 
 \subsection{KNN}
 
-KNN se evaluar? como representante de los modelos basados en distancia. Las
-variables num?ricas se estandarizar?n y las categ?ricas se codificar?n mediante
-One-Hot Encoding dentro del pipeline. Se utilizar? el conjunto podado de 17
+KNN se evaluará como representante de los modelos basados en distancia. Las
+variables numéricas se estandarizarán y las categóricas se codificarán mediante
+One-Hot Encoding dentro del pipeline. Se utilizará el conjunto podado de 17
 variables para reducir dimensiones irrelevantes, que pueden degradar las
 distancias entre observaciones.
 
-Debido al costo cuadr?tico aproximado de comparar vecinos sobre decenas de
-miles de reservas, la b?squeda de hiperpar?metros se realizar? sobre una
-muestra de grupos completos extra?da exclusivamente de 2015--2016. Esta muestra
-no interviene en la evaluaci?n temporal. Una vez seleccionados el n?mero de
-vecinos y su ponderaci?n, el pipeline se reajustar? sobre todo el conjunto de
-desarrollo y se evaluar? una ?nica vez sobre 2017. Por ello, el ROC AUC interno
-de KNN se informar? como una estimaci?n sobre la muestra de b?squeda y no como
-una comparaci?n exactamente equivalente a las CV completas de otros modelos.
+Debido al costo cuadrático aproximado de comparar vecinos sobre decenas de
+miles de reservas, la búsqueda de hiperparámetros se realizará sobre una
+muestra de grupos completos extraída exclusivamente de 2015--2016. Esta muestra
+no interviene en la evaluación temporal. Una vez seleccionados el número de
+vecinos y su ponderación, el pipeline se reajustará sobre todo el conjunto de
+desarrollo y se evaluará una única vez sobre 2017. Por ello, el ROC AUC interno
+de KNN se informará como una estimación sobre la muestra de búsqueda y no como
+una comparación exactamente equivalente a las CV completas de otros modelos.
+
+\subsection{Red neuronal MLP}
+
+La red neuronal se implementó mediante \texttt{MLPClassifier} sobre el conjunto
+podado de 17 variables. Las numéricas se estandarizaron y las categóricas se
+codificaron con One-Hot Encoding dentro del pipeline. La selección se realizó
+exclusivamente mediante los cinco folds externos estratificados y agrupados de
+2015--2016, manteniendo 2017 reservado.
+
+Se partió de dos capas ocultas de 32 y 16 neuronas, ReLU, Adam, regularización
+L2, batch 128 y 150 épocas. La comparación posterior estudió early stopping,
+arquitecturas de una y dos capas, \texttt{alpha}, learning rate y batch size,
+modificando una familia de parámetros por vez. Finalmente se confirmó mediante
+un bloque $2\times2$ la interacción entre los dos mejores learning rates y
+batches.
+
+Early stopping reserva internamente un 15\,\% aleatorio de los datos recibidos
+y decide detenerse mediante Accuracy. Esa partición no respeta los grupos y su
+métrica no coincide con el ROC AUC externo. Esta limitación se documentó; la
+selección principal continuó dependiendo de los folds externos agrupados. La
+configuración cerrada fue una capa de 32 neuronas, \texttt{alpha=0.01}, learning
+rate 0,001, batch 64, paciencia de 15 épocas y máximo de 300. El holdout no se
+utilizó para nuevos ajustes.
 
 \subsection{Modelos y criterio de evaluación}
 
