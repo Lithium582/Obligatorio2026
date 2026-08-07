@@ -203,6 +203,30 @@ estandarizadas, por lo que sus coeficientes representan cambios en unidades de
 desviación estándar. Las categorías con muy baja frecuencia se interpretaron
 con cautela aun cuando presentaran coeficientes grandes.
 
+\subsection{Árbol de decisión e importancia de variables}
+
+Se entrenó un árbol de decisión regularizado sobre el conjunto base depurado,
+conservando \texttt{LeadTime} continuo y los conteos originales. La primera
+búsqueda comparó criterio Gini y entropía, profundidades entre 4 y 10,
+\texttt{min\_samples\_leaf} entre 50 y 250 y pesos de clase nulos o
+balanceados. La selección utilizó exclusivamente los folds agrupados de
+desarrollo.
+
+La importancia se estudió mediante reducción de impureza, cantidad de splits,
+profundidad de primera aparición e importancia por permutación. Esta última se
+calculó sobre el fold no utilizado para ajustar cada árbol y permutando las
+variables originales antes del preprocesamiento. Las columnas one-hot se
+agruparon por predictor de origen para las medidas estructurales.
+
+Las variables con evidencia mínima se evaluaron mediante ablación. La poda
+seleccionada elimina \texttt{Babies}, \texttt{Children},
+\texttt{IsRepeatedGuest}, \texttt{HasCompany}, \texttt{ReservedRoomType},
+\texttt{ArrivalDateDayOfMonth} y \texttt{Meal}, además de la exclusión previa
+de \texttt{ArrivalDateWeekNumber}. Antes de consultar el holdout se realizó
+una búsqueda final sobre el conjunto de 17 variables, comparando profundidades
+8, 10, 12 y 14 y hojas mínimas de 75, 100, 150 y 250. La evaluación de 2017 no
+se utilizó para reajustar el modelo.
+
 \subsection{Modelos y criterio de evaluación}
 
 El baseline se construyó con una regresión logística, preprocesamiento

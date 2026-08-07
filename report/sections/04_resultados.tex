@@ -143,6 +143,44 @@ apareció cinco veces y \texttt{ReservedRoomType=P}, seis. Estos valores se
 consideran señales inestables producidas por baja frecuencia y no evidencia
 general de importancia, aunque conservaran el signo entre folds.
 
+\subsection{Árbol de decisión}
+
+La importancia por permutación identificó como núcleo predictivo a
+\texttt{Country}, \texttt{MarketSegment}, \texttt{PreviousCancellations},
+\texttt{LeadTime}, \texttt{TotalOfSpecialRequests},
+\texttt{ArrivalDateYear}, \texttt{RequiredCarParkingSpaces} y
+\texttt{CustomerType}. Todas mostraron importancia positiva en los cinco
+folds. \texttt{LeadTime} participó en 40 splits, confirmando la relevancia de
+su relación no lineal con la cancelación.
+
+La poda de 17 variables elevó el ROC AUC interno de 0,923749 a 0,924418 y
+mejoró los cinco folds. La búsqueda final seleccionó profundidad 14,
+\texttt{min\_samples\_leaf=75}, entropía y pesos balanceados. El árbol final
+contiene 392 hojas y 783 nodos.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Comparación técnica del árbol y Logistic Regression.}
+    \label{tab:decision-tree-comparison}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        Modelo & ROC AUC CV & ROC AUC 2017 & Accuracy & Precision & Recall & F1 \\
+        \midrule
+        LR baseline & 0,892500 & 0,842200 & 0,706100 & 0,579800 & 0,874000 & 0,697100 \\
+        LR mejorada & 0,908557 & 0,855017 & 0,739032 & 0,620290 & 0,839568 & 0,713461 \\
+        Árbol podado & 0,927092 & 0,838694 & 0,765822 & 0,723456 & 0,639187 & 0,678716 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Aunque el árbol obtuvo el mejor ROC AUC en validación cruzada, descendió a
+0,838694 sobre 2017 y presentó un gap temporal de 0,088398. Con threshold 0,5
+fue más preciso y alcanzó mayor Accuracy, pero omitió una proporción mayor de
+cancelaciones y obtuvo menor Recall y F1 que la regresión mejorada. Se conserva
+como herramienta para comprender y reducir variables, pero no como el mejor
+modelo temporal. El resultado del holdout no se utilizó para una nueva
+búsqueda.
+
 \subsection{Cancelaciones críticas}
 
 Dentro del holdout se identificaron 348 \texttt{No-Show} y 1.250

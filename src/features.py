@@ -46,6 +46,16 @@ CLEANED_BASE_COLUMNS_TO_EXCLUDE = (
     "ArrivalDateWeekNumber",
 )
 
+TREE_PRUNING_COLUMNS_TO_EXCLUDE = (
+    "Babies",
+    "Children",
+    "IsRepeatedGuest",
+    "HasCompany",
+    "ReservedRoomType",
+    "ArrivalDateDayOfMonth",
+    "Meal",
+)
+
 LOGISTIC_REGRESSION_FIRST_BATCH_EXCLUSIONS = (
     "ArrivalDateWeekNumber",
     "TotalGuests",
@@ -122,6 +132,28 @@ def remove_redundant_base_features(
             f"No se pueden excluir features inexistentes: {missing_columns}"
         )
     return X.drop(columns=columns_to_exclude).copy()
+
+
+def build_tree_pruned_feature_set(X):
+    """Construye el conjunto de 17 features elegido mediante el árbol."""
+    cleaned = remove_redundant_base_features(X)
+    missing_columns = sorted(
+        set(TREE_PRUNING_COLUMNS_TO_EXCLUDE).difference(cleaned.columns)
+    )
+    if missing_columns:
+        raise ValueError(
+            "No se pueden aplicar las exclusiones del árbol: "
+            f"{missing_columns}"
+        )
+    return cleaned.drop(columns=list(TREE_PRUNING_COLUMNS_TO_EXCLUDE)).copy()
+
+
+def build_tree_model_feature_sets(X):
+    """Devuelve las bases comparables para Random Forest y XGBoost."""
+    return {
+        "Cleaned base | 24 features": remove_redundant_base_features(X),
+        "Tree-pruned | 17 features": build_tree_pruned_feature_set(X),
+    }
 
 
 def make_exact_feature_groups(X):
