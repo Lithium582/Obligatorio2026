@@ -101,6 +101,48 @@ asociadas de \texttt{LeadTime} y presenta una dispersión ligeramente menor.
 La mejora frente al primer lote fue de 0,014637 y se observó en los cinco
 folds. El holdout temporal de 2017 permaneció reservado.
 
+\subsection{Regresión logística mejorada}
+
+La búsqueda seleccionó $C=1$, pesos de clase balanceados y regularización L1.
+El ROC AUC medio de validación cruzada fue 0,908557, con desviación 0,005873 y
+un gap train--validación de 0,003222. Sobre el holdout temporal alcanzó
+0,855017, una mejora de 0,012817 frente al baseline. La caída de 0,053540 entre
+CV y 2017 indica que persiste una diferencia de generalización temporal, pero
+la mejora obtenida durante desarrollo se conserva fuera de muestra.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Comparación de Logistic Regression sobre el holdout temporal.}
+    \label{tab:logistic-comparison}
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Modelo & ROC AUC & Accuracy & Precision & Recall & F1 \\
+        \midrule
+        Baseline & 0,842200 & 0,706100 & 0,579800 & 0,874000 & 0,697100 \\
+        Mejorado & 0,855017 & 0,739032 & 0,620290 & 0,839568 & 0,713461 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Con threshold 0,5 mejoraron Accuracy, Precision y F1, mientras que Recall se
+redujo en 0,034432. Este intercambio no se optimizó en esta etapa porque ROC
+AUC no depende del threshold y la política de decisión se comparará de manera
+común entre los modelos.
+
+La regularización L1 anuló 79 de las 229 columnas transformadas. Las bandas de
+\texttt{LeadTime} exhibieron un patrón monotónico: la cancelación observada
+aumentó desde 6,85\,\% para reservas del mismo día hasta 77,63\,\% para
+anticipaciones superiores a 365 días. \texttt{HasSpecialRequests},
+\texttt{TotalOfSpecialRequests} y \texttt{RequiredCarParkingSpaces} se
+asociaron con menor riesgo, mientras que \texttt{PreviousCancellationRate} se
+asoció con mayor riesgo.
+
+Los mayores coeficientes positivos correspondieron a algunas categorías con
+muy pocos registros. Por ejemplo, \texttt{DistributionChannel=Undefined}
+apareció cinco veces y \texttt{ReservedRoomType=P}, seis. Estos valores se
+consideran señales inestables producidas por baja frecuencia y no evidencia
+general de importancia, aunque conservaran el signo entre folds.
+
 \subsection{Cancelaciones críticas}
 
 Dentro del holdout se identificaron 348 \texttt{No-Show} y 1.250

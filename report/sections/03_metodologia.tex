@@ -186,6 +186,23 @@ especial, conservando el conteo original. La selección es específica del
 modelo lineal y no se trasladará automáticamente a modelos capaces de aprender
 cortes no lineales sobre la variable continua.
 
+\subsection{Regresión logística mejorada}
+
+La versión mejorada utilizó el conjunto lineal seleccionado y el mismo
+preprocesamiento reproducible del baseline. Sobre 2015--2016 se compararon
+$C\in\{0{,}001,0{,}01,0{,}1,1,10,100\}$, pesos de clase nulos o balanceados y
+regularización L1 o L2. La búsqueda comprendió 24 configuraciones evaluadas
+mediante los mismos cinco folds estratificados y agrupados. Se utilizó el
+solver \texttt{liblinear} y ROC AUC como criterio de selección.
+
+Una vez seleccionada la configuración se reajustó sobre todo el conjunto de
+desarrollo y se evaluó una única vez sobre el holdout temporal. Para estudiar
+la interpretación y estabilidad, el mejor esquema también se reajustó dentro
+de cada fold y se compararon sus coeficientes. Las variables numéricas fueron
+estandarizadas, por lo que sus coeficientes representan cambios en unidades de
+desviación estándar. Las categorías con muy baja frecuencia se interpretaron
+con cautela aun cuando presentaran coeficientes grandes.
+
 \subsection{Modelos y criterio de evaluación}
 
 El baseline se construyó con una regresión logística, preprocesamiento
