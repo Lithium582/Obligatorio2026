@@ -215,6 +215,71 @@ en 2017, generando un gap temporal de 0,098618, y permaneció por debajo de
 Logistic Regression mejorada tanto en ROC AUC temporal como en F1. La
 configuración se cerró sin reajustarla a partir del holdout.
 
+\subsection{XGBoost}
+
+La primera grilla mostr? una mejora clara al aumentar la profundidad de 3 a 5
+y la segunda confirm? una nueva mejora con profundidad 7. La mayor media de CV
+fue 0,938565 con \texttt{min\_child\_weight=5}. Sin embargo, se seleccion? el
+valor 15 porque redujo el gap train--validaci?n de 0,014283 a 0,013085 a cambio
+de s?lo 0,000288 de ROC AUC.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Comparaci?n t?cnica de los modelos finales sobre 2017.}
+    \label{tab:xgboost-results}
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        Modelo & ROC AUC CV & ROC AUC 2017 & Accuracy & Precision & Recall & F1 \\
+        \midrule
+        LR mejorada & 0,908557 & 0,855017 & 0,739032 & 0,620290 & 0,839568 & 0,713461 \\
+        ?rbol podado & 0,927092 & 0,838694 & 0,765822 & 0,723456 & 0,639187 & 0,678716 \\
+        Random Forest & 0,941260 & 0,842641 & 0,769312 & 0,748885 & 0,607621 & 0,670898 \\
+        XGBoost & 0,938277 & 0,867291 & 0,781724 & 0,737476 & 0,676913 & 0,705898 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+XGBoost obtuvo el mayor ROC AUC temporal y Accuracy. Su gap CV--2017 fue
+0,070986, menor que los observados en el ?rbol y Random Forest. Con threshold
+0,5 present? un compromiso m?s equilibrado entre Precision y Recall que los
+otros modelos basados en ?rboles. Logistic Regression mantuvo el mejor Recall
+y un F1 ligeramente superior, por lo que la decisi?n operativa final deber?
+comparar sus probabilidades bajo una pol?tica de threshold y costos com?n.
+
+\subsection{KNN}
+
+La b?squeda de KNN se realiz? sobre una muestra agrupada de 27.137 reservas de
+desarrollo para limitar el costo del c?lculo de distancias. Se compararon 25 y
+75 vecinos con ponderaci?n uniforme o por distancia, utilizando tres folds. La
+configuraci?n seleccionada emple? 75 vecinos ponderados y obtuvo ROC AUC medio
+0,876338, con desviaci?n 0,008868. Esta estimaci?n sobre una muestra no es
+directamente comparable con las validaciones completas de los dem?s modelos.
+
+El ROC AUC de entrenamiento cercano a uno de las configuraciones ponderadas no
+se tom? como evidencia convencional de sobreajuste: al predecir el propio
+entrenamiento, cada observaci?n es su vecina a distancia cero. La comparaci?n
+se bas? en los folds no observados y la evaluaci?n temporal posterior.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultado temporal de KNN.}
+    \label{tab:knn-results}
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Modelo & ROC AUC 2017 & Accuracy & Precision & Recall & F1 \\
+        \midrule
+        KNN & 0,825042 & 0,759751 & 0,743475 & 0,578914 & 0,650955 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+KNN present? el menor ROC AUC temporal de los modelos entrenados. Aunque su
+Precision fue alta, omiti? m?s de cuatro de cada diez cancelaciones. La p?rdida
+de capacidad de ordenamiento es coherente con la dificultad de definir
+cercan?a en el espacio de alta dimensi?n producido por One-Hot Encoding. Por
+este motivo no se ampli? la grilla y el modelo se conserva como comparaci?n de
+una familia basada en distancia, no como candidato final.
+
 \subsection{Cancelaciones críticas}
 
 Dentro del holdout se identificaron 348 \texttt{No-Show} y 1.250

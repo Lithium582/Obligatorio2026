@@ -243,6 +243,38 @@ profundidades relevantes con 100 árboles, manteniendo
 número de árboles se utilizó para abaratar la búsqueda; el holdout no participó
 en la selección ni se utilizó para una nueva iteración.
 
+\subsection{XGBoost}
+
+XGBoost utiliz? el conjunto podado de 17 variables, que obtuvo una ventaja
+m?nima frente a la base depurada con una configuraci?n fija y reduce el ruido
+en un modelo de alta capacidad. Se fijaron 150 estimadores, tasa de aprendizaje
+0,08, muestreo de filas y columnas de 0,8 y regularizaci?n L2 de 5. La raz?n
+entre clases de desarrollo se utiliz? como \texttt{scale\_pos\_weight}.
+
+La b?squeda se dividi? en dos grillas peque?as para evitar una exploraci?n
+combinatoria costosa. Primero se compararon profundidades 3 y 5 con
+\texttt{min\_child\_weight} 5 y 15; despu?s se extendi? solamente la profundidad
+a 7. La configuraci?n se seleccion? usando exclusivamente validaci?n cruzada
+y considerando conjuntamente media, dispersi?n y gap train--validaci?n. El
+holdout temporal se evalu? una sola vez despu?s de cerrar la decisi?n.
+
+\subsection{KNN}
+
+KNN se evaluar? como representante de los modelos basados en distancia. Las
+variables num?ricas se estandarizar?n y las categ?ricas se codificar?n mediante
+One-Hot Encoding dentro del pipeline. Se utilizar? el conjunto podado de 17
+variables para reducir dimensiones irrelevantes, que pueden degradar las
+distancias entre observaciones.
+
+Debido al costo cuadr?tico aproximado de comparar vecinos sobre decenas de
+miles de reservas, la b?squeda de hiperpar?metros se realizar? sobre una
+muestra de grupos completos extra?da exclusivamente de 2015--2016. Esta muestra
+no interviene en la evaluaci?n temporal. Una vez seleccionados el n?mero de
+vecinos y su ponderaci?n, el pipeline se reajustar? sobre todo el conjunto de
+desarrollo y se evaluar? una ?nica vez sobre 2017. Por ello, el ROC AUC interno
+de KNN se informar? como una estimaci?n sobre la muestra de b?squeda y no como
+una comparaci?n exactamente equivalente a las CV completas de otros modelos.
+
 \subsection{Modelos y criterio de evaluación}
 
 El baseline se construyó con una regresión logística, preprocesamiento
