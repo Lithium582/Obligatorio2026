@@ -23,8 +23,8 @@ estimar la probabilidad de que una reserva hotelera sea cancelada. Cada
 observación representa una reserva y la variable objetivo distingue entre
 reservas canceladas y no canceladas.
 
-El riesgo se estimará inmediatamente después de que la reserva sea confirmada
-y registrada. Este momento permite iniciar acciones preventivas con
+Se definió como momento de predicción el instante posterior a la confirmación
+y registro de la reserva. Este momento permite iniciar acciones preventivas con
 anticipación y utilizar solamente información ya disponible, evitando
 contaminación con datos generados durante la evolución o el desenlace de la
 reserva («data leakage»).
@@ -40,8 +40,8 @@ El valor potencial del sistema depende tanto de su capacidad predictiva como
 de la efectividad y el costo de la acción elegida. Un falso negativo representa
 una oportunidad perdida de intervenir sobre una reserva que finalmente se
 cancela. Un falso positivo implica actuar innecesariamente sobre una reserva
-que se habría concretado. Por este motivo, la evaluación no se limitará a una
-métrica técnica, sino que incorporará distintos escenarios de capacidad,
+que se habría concretado. Por este motivo, la evaluación no se limitó a una
+métrica técnica, sino que incorporó distintos escenarios de capacidad,
 costos y efectividad.
 
 \subsection{Objetivos}
@@ -66,21 +66,21 @@ Los objetivos específicos son:
     \item ajustar los hiperparámetros de los modelos más prometedores;
     \item analizar la importancia y el efecto de las variables sobre las
     predicciones;
-    \item seleccionar un umbral de decisión coherente con los costos del
-    negocio; y
+    \item comparar políticas de decisión a igual capacidad, conservando el
+    umbral 0,5 como referencia técnica; y
     \item comparar el valor esperado del modelo con estrategias alternativas
     de intervención.
 \end{itemize}
 
 \subsection{Alcance}
 
-El estudio se desarrollará sobre datos históricos de reservas de dos hoteles
-reales. Se compararán modelos lineales, modelos basados en árboles, métodos
+El estudio se desarrolló sobre datos históricos de reservas de dos hoteles
+reales. Se compararon modelos lineales, modelos basados en árboles, métodos
 basados en distancia y una red neuronal, utilizando una estrategia común de
 validación.
 
-El análisis económico se presentará mediante escenarios, dado que el conjunto
+El análisis económico se presentó mediante escenarios, dado que el conjunto
 de datos no registra el costo real de una intervención ni su efecto causal
-sobre la cancelación. En consecuencia, los resultados permitirán evaluar el
+sobre la cancelación. En consecuencia, los resultados permiten evaluar el
 potencial de una política de priorización, pero no demostrar que una acción
 específica evita cancelaciones en un entorno productivo.

@@ -125,9 +125,10 @@ la mejora obtenida durante desarrollo se conserva fuera de muestra.
 \end{table}
 
 Con threshold 0,5 mejoraron Accuracy, Precision y F1, mientras que Recall se
-redujo en 0,034432. Este intercambio no se optimizó en esta etapa porque ROC
-AUC no depende del threshold y la política de decisión se comparará de manera
-común entre los modelos.
+redujo en 0,034432. Este intercambio no se optimizó mediante el holdout porque
+ROC AUC no depende del threshold. Para la evaluación operativa posterior se
+compararon los modelos a igual capacidad y se conservó 0,5 sólo como referencia
+técnica.
 
 La regularización L1 anuló 79 de las 229 columnas transformadas. Las bandas de
 \texttt{LeadTime} exhibieron un patrón monotónico: la cancelación observada
@@ -243,8 +244,8 @@ XGBoost obtuvo el mayor ROC AUC temporal y Accuracy. Su gap CV--2017 fue
 0,070986, menor que los observados en el árbol y Random Forest. Con threshold
 0,5 presentó un compromiso más equilibrado entre Precision y Recall que los
 otros modelos basados en árboles. Logistic Regression mantuvo el mejor Recall
-y un F1 ligeramente superior, por lo que la decisión operativa final deberá
-comparar sus probabilidades bajo una política de threshold y costos común.
+y un F1 ligeramente superior. Por ello, la evaluación operativa posterior
+comparó sus probabilidades mediante políticas de igual capacidad.
 
 \subsection{KNN}
 
@@ -315,6 +316,73 @@ Recall, pero no mejora la capacidad de ordenamiento medida por ROC AUC. La red
 se conserva como comparación de una familia neuronal y no como candidato
 técnico principal.
 
+\subsection{Comparación operativa a igual capacidad}
+
+Sobre 2017 se identificaron 1.598 eventos críticos: 348 No-Show y 1.250
+cancelaciones registradas entre cero y siete días antes de la llegada. Su
+valor bruto elegible fue 540.098,62 unidades monetarias. Esta cantidad es
+exposición bruta y no una pérdida observada.
+
+XGBoost mantuvo el mejor ordenamiento del target original. Dentro del 5\,\%
+de mayor score, el 99,90\,\% de las reservas terminó cancelando. Sin embargo,
+esa selección incluyó sólo 4 eventos críticos, equivalentes a 0,25\,\%
+del total. El resultado muestra que las cancelaciones generales con mayor
+score no coinciden necesariamente con No-Show o cancelaciones tardías.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Captura operativa a igual capacidad.}
+    \label{tab:operational-capacity}
+    \begin{tabular}{lrrr}
+        \toprule
+        Modelo y capacidad & Recall crítico & Captura de valor bruto & Lift \\
+        \midrule
+        LR, 10\,\% & 0,0720 & 0,1143 & 0,7196 \\
+        LR, 20\,\% & 0,2078 & 0,2600 & 1,0387 \\
+        LR, 30\,\% & 0,3254 & 0,3869 & 1,0846 \\
+        XGBoost, 10\,\% & 0,0357 & 0,0647 & 0,3567 \\
+        XGBoost, 20\,\% & 0,1189 & 0,1919 & 0,5944 \\
+        XGBoost, 30\,\% & 0,2760 & 0,3398 & 0,9198 \\
+        MLP, 10\,\% & 0,0350 & 0,0938 & 0,3504 \\
+        MLP, 20\,\% & 0,1327 & 0,2263 & 0,6633 \\
+        MLP, 30\,\% & 0,2146 & 0,3363 & 0,7154 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Logistic Regression fue la mejor alternativa para la evaluación crítica.
+Con capacidades de 20 y 30\,\% superó la selección aleatoria tanto en
+cantidad de eventos como en valor bruto. En 5 y 10\,\% detectó menos eventos
+que el azar, aunque capturó una proporción de valor bruto superior.
+
+\subsection{Diagnóstico del desalineamiento del objetivo}
+
+Las distribuciones de scores muestran que las cancelaciones no críticas
+reciben valores mayores. En XGBoost, su score mediano fue 0,7830, frente a
+0,3664 para cancelaciones tardías y 0,4803 para No-Show.
+
+\begin{table}[htbp]
+    \centering
+    \caption{ROC AUC del target original y del evento crítico retrospectivo.}
+    \label{tab:critical-retrospective-auc}
+    \begin{tabular}{lrrr}
+        \toprule
+        Modelo & Cancelación general & Crítico vs. todos & Crítico entre cancelaciones \\
+        \midrule
+        Logistic Regression & 0,855017 & 0,565019 & 0,293529 \\
+        XGBoost & 0,867291 & 0,563477 & 0,251317 \\
+        MLP & 0,845721 & 0,497290 & 0,219339 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Los ROC AUC inferiores a 0,5 dentro de las reservas canceladas indican que los
+scores tienden a ordenar primero las cancelaciones no críticas. Por tanto, el
+proyecto mantiene \texttt{Cancelled} como objetivo y limita la interpretación
+económica de sus predicciones. Entrenar un modelo específico para
+\texttt{IsCriticalCancellation} se propone como trabajo futuro; no se reabre
+el ciclo de modelado con información observada en el holdout.
+
 \subsection{Cancelaciones críticas}
 
 Dentro del holdout se identificaron 348 \texttt{No-Show} y 1.250
@@ -369,5 +437,38 @@ Por lo tanto, la política basada en el baseline y el umbral 0,5 no resulta
 conveniente bajo el escenario analizado. Esta conclusión no se generaliza a
 todo uso de modelos predictivos: el baseline contiene señal y supera la
 selección aleatoria, pero distribuye las intervenciones sobre demasiadas
-reservas. Las siguientes etapas evaluarán si nuevas variables, otros modelos y
-una política de capacidad limitada permiten concentrar mejor el riesgo.
+reservas. Este antecedente motivó la evaluación posterior de los modelos finales
+con políticas de capacidad limitada y supuestos económicos diferenciados.
+
+\subsection{Evaluación económica por escenarios}
+
+El cálculo final reemplazó el supuesto extremo de pérdida total por tres
+escenarios. Para cada evento se aplicaron un margen de contribución, una
+fracción no recuperada específica para \texttt{No-Show} o cancelación tardía,
+una proporción de reducción de la pérdida y un costo por contacto. Estos
+parámetros representan supuestos de sensibilidad y no cantidades observadas.
+
+Ninguna política produjo ahorro en los escenarios conservador e intermedio.
+La alternativa más cercana al equilibrio fue Logistic Regression con capacidad
+de 5\,\% en el escenario intermedio: el ahorro neto fue
+\SI{-4744,17}{} unidades y la reducción de pérdida necesaria para alcanzar el
+equilibrio fue 56,21\,\%, frente al 30\,\% supuesto.
+
+Los resultados fueron positivos principalmente en el escenario favorable
+extremo. Logistic Regression obtuvo \SI{10991,97}{} unidades con capacidad de
+5\,\% y \SI{48443,20}{} con 30\,\%, aunque esta última alternativa exige
+12.207 contactos. Por ello, maximizar el ahorro calculado no implica
+automáticamente una política operativamente conveniente.
+
+Logistic Regression presentó el mejor resultado económico, mientras que
+XGBoost conservó el mayor ROC AUC para \texttt{Cancelled}. Esta diferencia
+confirma que ordenar cancelaciones generales no equivale a priorizar los
+eventos críticos. Además, el costo adicional de falsos positivos se mantuvo en
+cero porque no es posible estimar con los datos los descuentos innecesarios,
+la fricción o las cancelaciones inducidas por el contacto. Su incorporación
+reduciría los ahorros calculados.
+
+En consecuencia, la política sólo muestra viabilidad bajo supuestos favorables
+y no se presenta como una fuente de ahorro demostrada. Se propone como trabajo
+futuro entrenar directamente un modelo para
+\texttt{IsCriticalCancellation}.

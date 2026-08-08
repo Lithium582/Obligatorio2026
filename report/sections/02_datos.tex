@@ -36,7 +36,7 @@ concentran en \texttt{Company} (112.593), \texttt{Agent} (16.340),
 \texttt{Country} (488) y \texttt{Children} (4). En \texttt{Agent} y
 \texttt{Company} la ausencia parece ser principalmente estructural: una
 agencia o una empresa no intervienen en todas las operaciones. Por este motivo
-no se asumirá que corresponda imputarlas mediante la categoría más frecuente.
+no se asumió que correspondiera imputarlas mediante la categoría más frecuente.
 
 Se encontraron 180 reservas sin huéspedes registrados, 715 con cero noches y
 70 que cumplen ambas condiciones. La mayoría presenta estado final
@@ -90,13 +90,13 @@ No se eliminaron estas observaciones: pueden representar reservas diferentes
 pertenecientes a contingentes o bloques gestionados conjuntamente y su peso
 económico es real. Una deduplicación hipotética reduciría la tasa global de
 cancelación de 37,04\,\% a 27,49\,\%, alterando sustancialmente el problema.
-En cambio, la estrategia de validación deberá impedir que reservas relacionadas
-aparezcan simultáneamente en entrenamiento y validación.
+En cambio, la estrategia de validación se diseñó para impedir que combinaciones
+idénticas aparecieran simultáneamente en entrenamiento y validación.
 
 \subsection{Disponibilidad temporal y fugas de información}
 
-El modelo principal estimará el riesgo una vez que la reserva haya sido
-confirmada y registrada. En ese momento \texttt{DaysInWaitingList} es
+El riesgo se estimó una vez que la reserva había sido confirmada y registrada.
+En ese momento \texttt{DaysInWaitingList} es
 admisible: se define como la cantidad de días transcurridos en lista de espera
 antes de la confirmación al cliente.
 
@@ -104,7 +104,7 @@ antes de la confirmación al cliente.
 los registros \texttt{Canceled} y \texttt{No-Show} tienen
 \texttt{IsCanceled}=1, mientras que todos los \texttt{Check-Out} tienen valor
 cero. \texttt{ReservationStatusDate} registra la fecha en la que se produjo
-ese desenlace. Ambas variables se excluirán de todos los modelos.
+ese desenlace. Ambas variables se excluyeron de todos los modelos.
 
 \texttt{DepositType} también se excluye. Aunque su nombre puede interpretarse
 como una política contractual, en este dataset fue construida a partir de los
@@ -119,5 +119,5 @@ ese momento.
 
 Las decisiones de imputación, tratamiento de extremos, codificación y
 selección de variables no se fijaron durante el análisis exploratorio. Se
-evaluarán de manera reproducible en las etapas de análisis e ingeniería de
-variables.
+evaluaron posteriormente de manera reproducible en las etapas de análisis e
+ingeniería de variables.

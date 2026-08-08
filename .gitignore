@@ -184,7 +184,6 @@ data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
-outputs/figures/*
 outputs/metrics/*
 outputs/models/*
 !outputs/figures/.gitkeep

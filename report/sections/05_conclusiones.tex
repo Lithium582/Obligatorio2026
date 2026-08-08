@@ -1,4 +1,79 @@
 \section{Conclusiones}
 
-Responder el objetivo planteado, resumir los principales hallazgos, reconocer
-limitaciones y proponer posibles líneas de trabajo futuro.
+El proyecto evaluó la posibilidad de anticipar cancelaciones de reservas
+hoteleras y utilizar las probabilidades estimadas para priorizar acciones
+preventivas. La separación temporal entre desarrollo (2015--2016) y holdout
+(2017) permitió observar una dificultad que una partición aleatoria habría
+ocultado parcialmente: todos los modelos presentaron una caída de rendimiento
+al generalizar hacia un período posterior.
+
+XGBoost obtuvo el mejor ordenamiento del target original, con ROC AUC 0,867291
+sobre 2017 y Accuracy 0,781724. Logistic Regression mejorada alcanzó ROC AUC
+0,855017, el mayor F1 (0,713461) y una estructura más interpretable. La MLP
+consiguió el mayor Recall (0,964433) con threshold 0,5, pero a costa de 14.611
+falsos positivos. El árbol resultó especialmente útil para estudiar y reducir
+variables, mientras que Random Forest y KNN no superaron a los candidatos
+principales en el holdout temporal.
+
+La ingeniería de variables produjo una mejora clara en el modelo lineal. La
+representación por bandas de \texttt{LeadTime}, las solicitudes especiales y
+el historial relativo de cancelaciones permitieron mejorar el baseline sin
+utilizar el holdout para seleccionar alternativas. También se descartaron
+variables redundantes o con riesgo de leakage, priorizando una representación
+más parsimoniosa y disponible al momento de la predicción.
+
+La evaluación operativa reveló que el objetivo técnico y el objetivo económico
+no están completamente alineados. Los modelos distinguen adecuadamente las
+cancelaciones generales, pero asignan scores mayores principalmente a
+cancelaciones no críticas. Dentro de las reservas canceladas, los ROC AUC para
+distinguir No-Show y cancelaciones tardías fueron inferiores a 0,5. Por este
+motivo, XGBoost fue el mejor modelo técnico, mientras que Logistic Regression
+produjo la mejor priorización económica entre los candidatos analizados.
+
+El valor bruto de una reserva no se interpretó como pérdida observada. El
+análisis final incorporó margen de contribución, fracciones no recuperadas por
+tipo de evento, efectividad de la intervención y costo por contacto. Ninguna
+política resultó rentable bajo los escenarios conservador e intermedio. Los
+ahorros fueron positivos principalmente en el escenario favorable extremo y
+dependieron de supuestos que el dataset no permite verificar. Además, no fue
+posible cuantificar descuentos innecesarios, fricción ni cancelaciones
+inducidas por el contacto. En consecuencia, el sistema no demuestra por sí
+solo una fuente de ahorro y no justifica una implementación operativa sin
+validación adicional.
+
+\subsection{Limitaciones}
+
+Los datos proceden de dos hoteles portugueses y cubren solamente el período
+comprendido entre julio de 2015 y agosto de 2017, por lo que los resultados no
+se generalizan automáticamente a otros establecimientos o contextos. Algunas
+variables categóricas presentan niveles de muy baja frecuencia, y las
+diferencias temporales observadas sugieren posibles cambios en la distribución
+de los datos.
+
+El dataset tampoco contiene el margen real, los pagos efectivamente
+recuperados, la posibilidad de revender cada habitación, el costo de contacto
+ni la respuesta causal a una intervención. Los escenarios económicos permiten
+analizar condiciones de viabilidad, pero no estimar un ahorro contable real.
+Finalmente, \texttt{IsCriticalCancellation} se construyó retrospectivamente a
+partir del estado final y de su fecha; sólo puede utilizarse como target de un
+nuevo entrenamiento, nunca como predictor disponible al crear la reserva.
+
+\subsection{Trabajo futuro}
+
+La principal extensión consiste en repetir el ciclo de modelado utilizando
+\texttt{IsCriticalCancellation} como objetivo. Esto permitiría optimizar
+directamente la priorización de No-Show y cancelaciones tardías en lugar de
+esperar que un modelo de cancelación general las ordene adecuadamente.
+
+Antes de una aplicación real también sería necesario estimar los parámetros
+económicos con información del hotel y diseñar una prueba controlada de la
+política de contacto. Dicha prueba debería medir confirmaciones, pagos
+garantizados, reventa del inventario, satisfacción del cliente y posibles
+cancelaciones inducidas. Con esos datos podrían ajustarse capacidad y
+threshold según beneficio neto, no solamente mediante métricas de
+clasificación.
+
+Como extensiones técnicas adicionales pueden evaluarse calibración de
+probabilidades, monitoreo de drift temporal y nuevas búsquedas de
+hiperparámetros. Estas mejoras sólo tendrían sentido después de alinear el
+target con la decisión operativa y disponer de costos observados.

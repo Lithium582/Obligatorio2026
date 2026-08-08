@@ -52,29 +52,30 @@ de la identidad concreta de cada agencia o empresa.
 
 \texttt{Country} se conserva como variable nominal: mostró una asociación
 relevante con la cancelación, aunque parte de ella está relacionada con el
-hotel y con combinaciones repetidas. Se evaluará una representación agrupada o
-un indicador como \texttt{IsDomestic}. Cualquier agrupación informada por el
-objetivo deberá aprenderse exclusivamente con los datos de entrenamiento de
+hotel y con combinaciones repetidas. Se evaluaron una representación agrupada y
+un indicador como \texttt{IsDomestic}. Las transformaciones se calcularon sin
+utilizar el objetivo y exclusivamente con la información disponible en
 cada partición para evitar contaminación.
 
 Se propusieron \texttt{TotalGuests}, suma de adultos, niños y bebés, y
 \texttt{TotalNights}, suma de noches de semana y fin de semana. Estas variables
 son interpretables, pero su ROC AUC individual no superó al mejor de sus
-componentes. Por ello se tratarán como candidatas y no reemplazarán inicialmente
-las columnas originales; su aporte se comprobará mediante ablación.
+componentes. Por ello se trataron como candidatas y no reemplazaron inicialmente
+las columnas originales; su aporte se comprobó mediante ablación.
 
 La relación de \texttt{DaysInWaitingList} con la cancelación cambia de
 dirección según el hotel, varía entre años y se debilita al reducir el peso de
-las combinaciones repetidas. El valor numérico se conservará provisionalmente
-para modelos basados en árboles. En modelos lineales se evaluará una versión
+las combinaciones repetidas. El valor numérico se conservó para modelos basados
+en árboles. En modelos lineales se evaluó una versión
 binaria, \texttt{WasOnWaitingList}, junto con su interacción con
 \texttt{HotelType}, en lugar de asumir un efecto lineal común.
 
 Las reservas sin huéspedes o con cero noches se conservaron. Representan una
 proporción pequeña y el análisis exploratorio mostró que pueden corresponder a
 registros operativos válidos. Los pocos valores extremos de cantidad de
-huéspedes y duración tampoco se eliminarán mediante reglas globales; cualquier
-tratamiento se implementará dentro del pipeline y se validará fuera de muestra.
+huéspedes y duración tampoco se eliminaron mediante reglas globales. Los nulos
+admisibles se imputaron dentro del pipeline y las transformaciones se validaron
+fuera de muestra.
 
 El análisis de redundancia posterior al baseline no encontró multicolinealidad
 relevante entre las variables numéricas originales: el mayor VIF fue 1,52. La
@@ -101,10 +102,10 @@ repeticiones exactas no aparecieran simultáneamente en entrenamiento y
 validación interna. El holdout temporal no participó en la selección.
 
 Todas las imputaciones, codificaciones, escalados y transformaciones se
-ajustarán dentro de pipelines utilizando solamente los datos de entrenamiento.
-Las nuevas variables se compararán contra un conjunto base común. La selección
-final considerará ROC AUC fuera de muestra, estabilidad entre particiones e
-interpretabilidad, y se apoyará en experimentos de ablación en lugar de
+ajustaron dentro de pipelines utilizando solamente los datos de entrenamiento.
+Las nuevas variables se compararon contra un conjunto base común. La selección
+final consideró ROC AUC fuera de muestra, estabilidad entre particiones e
+interpretabilidad, y se apoyó en experimentos de ablación en lugar de
 decidir únicamente a partir de asociaciones calculadas sobre el dataset
 completo.
 
@@ -145,6 +146,27 @@ valoración. Para comparar políticas se consideraron parámetros explícitos de
 recuperación del valor, costo por intervención, costo adicional de intervenir
 sobre casos no críticos y efectividad de la acción.
 
+\subsection{Política preventiva propuesta}
+
+La política operativa considerada consiste en contactar las reservas
+priorizadas para solicitar confirmación y, cuando corresponda, una garantía
+de pago o prepago. La intervención no se interpreta exclusivamente como un
+medio para impedir la cancelación: también puede asegurar parte del valor o
+provocar una cancelación con mayor anticipación, liberando inventario para
+su posible reventa.
+
+El contacto puede tener además un efecto adverso. La fricción introducida
+podría inducir la cancelación de una reserva que, sin intervención, se
+habría concretado. El dataset no identifica cancelaciones inducidas ni
+permite estimar su frecuencia. Este efecto se reconoció como limitación y
+posible costo de intervenir falsos positivos. Se conservó como parámetro
+explícito con valor inicial cero porque no existe una magnitud observada.
+
+La comparación operativa utilizó capacidades iguales en lugar de un threshold
+común, porque los modelos producen scores con distribuciones y calibraciones
+diferentes. Se evaluaron los primeros 5, 10, 20 y 30\,\% del ranking de cada
+modelo contra una selección aleatoria de igual tamaño.
+
 \subsection{Primer lote de ingeniería de variables}
 
 Las variables nuevas se evaluaron con la regresión logística y sus
@@ -165,7 +187,7 @@ El conjunto lineal seleccionado reemplaza \texttt{PreviousCancellations} por
 excluye \texttt{ArrivalDateWeekNumber}. No incorpora \texttt{TotalGuests},
 \texttt{TotalNights}, \texttt{IsDomestic} ni
 \texttt{HasPreviousCancellation}. Esta selección es específica de regresión
-logística; las representaciones útiles para árboles se evaluarán por separado.
+logística; las representaciones útiles para árboles se evaluaron por separado.
 
 \subsection{Segundo lote de ingeniería de variables}
 
@@ -182,8 +204,8 @@ Para regresión logística se seleccionó \texttt{LeadTimeBand} en reemplazo de
 91--180, 181--365 y más de 365 días. Esta representación permite asignar un
 efecto diferente a cada rango sin imponer una relación lineal común. También
 se agregó \texttt{HasSpecialRequests}, indicador de al menos una solicitud
-especial, conservando el conteo original. La selección es específica del
-modelo lineal y no se trasladará automáticamente a modelos capaces de aprender
+especial, conservando el conteo original. La selección fue específica del
+modelo lineal y no se trasladó automáticamente a modelos capaces de aprender
 cortes no lineales sobre la variable continua.
 
 \subsection{Regresión logística mejorada}
@@ -260,19 +282,19 @@ holdout temporal se evaluó una sola vez después de cerrar la decisión.
 
 \subsection{KNN}
 
-KNN se evaluará como representante de los modelos basados en distancia. Las
-variables numéricas se estandarizarán y las categóricas se codificarán mediante
-One-Hot Encoding dentro del pipeline. Se utilizará el conjunto podado de 17
+KNN se evaluó como representante de los modelos basados en distancia. Las
+variables numéricas se estandarizaron y las categóricas se codificaron mediante
+One-Hot Encoding dentro del pipeline. Se utilizó el conjunto podado de 17
 variables para reducir dimensiones irrelevantes, que pueden degradar las
 distancias entre observaciones.
 
 Debido al costo cuadrático aproximado de comparar vecinos sobre decenas de
-miles de reservas, la búsqueda de hiperparámetros se realizará sobre una
+miles de reservas, la búsqueda de hiperparámetros se realizó sobre una
 muestra de grupos completos extraída exclusivamente de 2015--2016. Esta muestra
-no interviene en la evaluación temporal. Una vez seleccionados el número de
-vecinos y su ponderación, el pipeline se reajustará sobre todo el conjunto de
-desarrollo y se evaluará una única vez sobre 2017. Por ello, el ROC AUC interno
-de KNN se informará como una estimación sobre la muestra de búsqueda y no como
+no intervino en la evaluación temporal. Una vez seleccionados el número de
+vecinos y su ponderación, el pipeline se reajustó sobre todo el conjunto de
+desarrollo y se evaluó una única vez sobre 2017. Por ello, el ROC AUC interno
+de KNN se informa como una estimación sobre la muestra de búsqueda y no como
 una comparación exactamente equivalente a las CV completas de otros modelos.
 
 \subsection{Red neuronal MLP}
@@ -301,13 +323,13 @@ utilizó para nuevos ajustes.
 \subsection{Modelos y criterio de evaluación}
 
 El baseline se construyó con una regresión logística, preprocesamiento
-reproducible y una búsqueda deliberadamente pequeña. Posteriormente se evaluarán regresión
+reproducible y una búsqueda deliberadamente pequeña. Posteriormente se evaluaron regresión
 logística, árbol de decisión, Random Forest, XGBoost, KNN y una red neuronal,
 con el objetivo de comparar familias de modelos lineales, basados en árboles,
 distancia y aprendizaje neuronal.
 
-ROC AUC será la métrica técnica principal porque evalúa el ordenamiento del
-riesgo sin fijar anticipadamente un umbral de decisión. Una vez seleccionado
-el modelo, el umbral se analizará por separado según el costo de los falsos
-positivos, el costo de los falsos negativos y la capacidad disponible para
-realizar acciones preventivas.
+ROC AUC fue la métrica técnica principal porque evalúa el ordenamiento del
+riesgo sin fijar anticipadamente un umbral de decisión. El umbral 0,5 se
+conservó como referencia para las métricas de clasificación. La decisión
+operativa se analizó posteriormente mediante capacidades iguales, dado que los
+costos reales y la respuesta causal a la intervención no están observados.
