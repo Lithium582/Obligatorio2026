@@ -383,62 +383,14 @@ económica de sus predicciones. Entrenar un modelo específico para
 \texttt{IsCriticalCancellation} se propone como trabajo futuro; no se reabre
 el ciclo de modelado con información observada en el holdout.
 
-\subsection{Cancelaciones críticas}
+\subsection{Del baseline al modelo económico final}
 
-Dentro del holdout se identificaron 348 \texttt{No-Show} y 1.250
-cancelaciones ocurridas como máximo siete días antes de la llegada: 1.598
-eventos críticos en total. El baseline detectó 1.179 y omitió 419, alcanzando
-un recall crítico de 73,78\,\%.
-
-El valor bruto estimado de los eventos críticos fue 540.098,62 unidades
-monetarias. El modelo identificó 419.003,64 (77,58\,\%) y dejó sin identificar
-121.094,98. Estos valores representan exposición bruta bajo los supuestos
-definidos, no ingresos efectivamente perdidos o recuperados.
-
-\begin{table}[htbp]
-    \centering
-    \caption{Evaluación operativa del baseline con umbral 0,5.}
-    \label{tab:baseline-operational}
-    \begin{tabular}{lr}
-        \toprule
-        Indicador & Resultado \\
-        \midrule
-        Eventos críticos & 1.598 \\
-        Eventos críticos detectados & 1.179 \\
-        Recall crítico & 73,78\,\% \\
-        Intervenciones & 23.736 \\
-        Intervenciones sobre casos no críticos & 22.557 \\
-        Precisión de intervención crítica & 4,97\,\% \\
-        Valor crítico capturado & 77,58\,\% \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-Intervenir sobre 23.736 reservas equivale al 58,34\,\% del holdout. Una
-selección aleatoria de igual tamaño detectaría en promedio aproximadamente 932
-eventos críticos, frente a los 1.179 del modelo. El lift observado es 1,2647:
-la regresión logística identifica alrededor de 26,5\,\% más eventos críticos
-que una política aleatoria con la misma capacidad.
-
-\subsection{Escenario económico ilustrativo}
-
-Como comprobación de la metodología se evaluó un escenario que supone pérdida
-del 100\,\% del valor bruto de cada evento crítico, costo de 10 unidades por
-intervención, efectividad de 25\,\% y costo adicional nulo para los casos no
-críticos. Estos parámetros son ilustrativos y no fueron observados en los
-datos.
-
-Bajo dichos supuestos, no intervenir representa 540.098,62 unidades de costo
-estimado y aplicar la política del baseline representa 672.707,71. El ahorro esperado es negativo en 132.609,09 unidades
-\SI{-24,55}{\percent}. Con ese costo de intervención, la efectividad mínima para
-alcanzar el punto de equilibrio sería 56,65\,\%.
-
-Por lo tanto, la política basada en el baseline y el umbral 0,5 no resulta
-conveniente bajo el escenario analizado. Esta conclusión no se generaliza a
-todo uso de modelos predictivos: el baseline contiene señal y supera la
-selección aleatoria, pero distribuye las intervenciones sobre demasiadas
-reservas. Este antecedente motivó la evaluación posterior de los modelos finales
-con políticas de capacidad limitada y supuestos económicos diferenciados.
+La primera formulación, aplicada al baseline con umbral 0,5, requería contactar
+23.736 reservas, equivalentes al 58,34\,\% del holdout, y sólo el 4,97\,\% de
+esas intervenciones correspondía a un evento crítico. Esta carga operativa y
+el supuesto extremo de interpretar todo el valor bruto como pérdida motivaron
+el reemplazo de la matriz de confusión por políticas de capacidad limitada y
+del valor bruto por una pérdida estimada mediante escenarios.
 
 \subsection{Evaluación económica por escenarios}
 
@@ -447,6 +399,55 @@ escenarios. Para cada evento se aplicaron un margen de contribución, una
 fracción no recuperada específica para \texttt{No-Show} o cancelación tardía,
 una proporción de reducción de la pérdida y un costo por contacto. Estos
 parámetros representan supuestos de sensibilidad y no cantidades observadas.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \caption{Parámetros de los escenarios económicos.}
+    \label{tab:economic-scenario-parameters}
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Escenario & Margen & No-Show & Tardía & Reducción & Contacto \\
+        \midrule
+        Conservador & 50\,\% & 70\,\% & 25\,\% & 10\,\% & 10 \\
+        Intermedio & 70\,\% & 90\,\% & 50\,\% & 30\,\% & 5 \\
+        Favorable extremo & 85\,\% & 100\,\% & 75\,\% & 50\,\% & 2 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+La columna \emph{No-Show} indica la fracción no recuperada para ese evento;
+\emph{Tardía}, la correspondiente a cancelaciones entre cero y siete días;
+y \emph{Reducción}, la proporción de la pérdida detectada que la intervención
+consigue reducir. El costo adicional por caso no crítico se mantuvo en cero en
+los tres escenarios.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \caption{Ahorro neto esperado por modelo, capacidad y escenario.}
+    \label{tab:economic-net-savings}
+    \begin{tabular}{lrrrr}
+        \toprule
+        Modelo & Capacidad & Conservador & Intermedio & Favorable extremo \\
+        \midrule
+        Logistic Regression & 5\,\%  & -19.583,77 & -4.744,17  & 10.991,97 \\
+        Logistic Regression & 10\,\% & -39.542,60 & -12.461,08 & 13.310,12 \\
+        Logistic Regression & 20\,\% & -78.702,33 & -22.503,01 & 32.835,12 \\
+        Logistic Regression & 30\,\% & -118.135,18 & -34.154,66 & 48.443,20 \\
+        \addlinespace
+        XGBoost & 5\,\%  & -20.236,77 & -9.223,88  & -1.182,68 \\
+        XGBoost & 10\,\% & -39.984,82 & -15.672,39 & 4.274,58 \\
+        XGBoost & 20\,\% & -79.389,11 & -27.210,18 & 20.049,69 \\
+        XGBoost & 30\,\% & -118.578,04 & -37.293,16 & 39.739,39 \\
+        \addlinespace
+        MLP & 5\,\%  & -19.948,70 & -7.108,66  & 4.807,05 \\
+        MLP & 10\,\% & -39.900,97 & -14.444,98 & 8.741,71 \\
+        MLP & 20\,\% & -79.331,84 & -25.912,60 & 25.145,48 \\
+        MLP & 30\,\% & -118.968,68 & -38.862,45 & 37.400,91 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 Ninguna política produjo ahorro en los escenarios conservador e intermedio.
 La alternativa más cercana al equilibrio fue Logistic Regression con capacidad

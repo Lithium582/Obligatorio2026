@@ -142,9 +142,38 @@ El valor bruto de una reserva se aproximó como
 Esta cantidad no constituye una pérdida contable observada, porque el dataset
 no registra pagos, penalizaciones, reventa de habitaciones ni costos evitados.
 El registro con \texttt{ADR}=5400 y el único ADR negativo se excluyeron de la
-valoración. Para comparar políticas se consideraron parámetros explícitos de
-recuperación del valor, costo por intervención, costo adicional de intervenir
-sobre casos no críticos y efectividad de la acción.
+valoración. Para cada evento crítico $i$, la pérdida estimada se definió como
+
+\[
+    L_i = V_i \times m \times r_{t_i},
+\]
+
+donde $V_i$ es el valor bruto de la reserva, $m$ el margen de contribución y
+$r_{t_i}$ la fracción no recuperada correspondiente al tipo de evento
+---\texttt{No-Show} o cancelación tardía---. El beneficio potencial de
+intervenir correctamente sobre esa reserva fue
+
+\[
+    B_i = L_i \times e,
+\]
+
+donde $e$ representa la proporción de la pérdida que la acción consigue
+reducir mediante confirmación, garantía de pago, cancelación anticipada o
+reventa del inventario.
+
+El resultado económico neto de una política se calculó como
+
+\[
+    A = \sum_{i \in D} B_i - N_c c - N_{nc} h,
+\]
+
+donde $D$ es el conjunto de eventos críticos detectados, $N_c$ la cantidad
+total de contactos, $c$ el costo unitario de contacto, $N_{nc}$ la cantidad de
+intervenciones sobre casos no críticos y $h$ su posible costo adicional. Como
+el dataset no permite estimar descuentos innecesarios, fricción ni
+cancelaciones inducidas, $h$ se mantuvo en cero en los escenarios iniciales.
+Los parámetros se trataron como supuestos de sensibilidad y no como cantidades
+observadas.
 
 \subsection{Política preventiva propuesta}
 
