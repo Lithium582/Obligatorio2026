@@ -52,8 +52,10 @@ de la identidad concreta de cada agencia o empresa.
 
 \texttt{Country} se conserva como variable nominal: mostró una asociación
 relevante con la cancelación, aunque parte de ella está relacionada con el
-hotel y con combinaciones repetidas. Se evaluaron una representación agrupada y
-un indicador como \texttt{IsDomestic}. Las transformaciones se calcularon sin
+hotel y con combinaciones repetidas. Se evaluó además el indicador
+\texttt{IsDomestic}; las agrupaciones de categorías infrecuentes se utilizaron
+únicamente con fines descriptivos en el análisis de asociaciones. Las
+transformaciones candidatas se calcularon sin
 utilizar el objetivo y exclusivamente con la información disponible en
 cada partición para evitar contaminación.
 
@@ -120,7 +122,7 @@ Las variables numéricas se imputaron por mediana y se estandarizaron. Las
 categóricas se imputaron por moda y se codificaron mediante One-Hot Encoding,
 ignorando categorías desconocidas en validación. Todas las operaciones se
 ajustaron dentro de un \textit{pipeline}. La búsqueda ligera comparó
-$C\in\{0{,}1,1,10\}$ y \texttt{class\_weight} con valores \texttt{None} y
+$C\in\{0{,}1;\ 1;\ 10\}$ y \texttt{class\_weight} con valores \texttt{None} y
 \texttt{balanced}, utilizando ROC AUC como criterio de selección.
 
 \subsection{Evaluación operativa y valor estimado}
@@ -241,7 +243,7 @@ cortes no lineales sobre la variable continua.
 
 La versión mejorada utilizó el conjunto lineal seleccionado y el mismo
 preprocesamiento reproducible del baseline. Sobre 2015--2016 se compararon
-$C\in\{0{,}001,0{,}01,0{,}1,1,10,100\}$, pesos de clase nulos o balanceados y
+$C\in\{0{,}001;\ 0{,}01;\ 0{,}1;\ 1;\ 10;\ 100\}$, pesos de clase nulos o balanceados y
 regularización L1 o L2. La búsqueda comprendió 24 configuraciones evaluadas
 mediante los mismos cinco folds estratificados y agrupados. Se utilizó el
 solver \texttt{liblinear} y ROC AUC como criterio de selección.

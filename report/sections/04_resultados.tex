@@ -316,6 +316,19 @@ Recall, pero no mejora la capacidad de ordenamiento medida por ROC AUC. La red
 se conserva como comparación de una familia neuronal y no como candidato
 técnico principal.
 
+La Figura~\ref{fig:final-models-roc} compara el comportamiento de los tres
+modelos candidatos a lo largo de todos los thresholds. XGBoost presenta la
+mayor área bajo la curva en el holdout temporal, seguido por Logistic
+Regression y MLP. La visualización complementa las métricas puntuales y evita
+que la comparación dependa de un único threshold de clasificación.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.78\textwidth]{final_models_roc_curves.png}
+    \caption{Curvas ROC de los modelos candidatos sobre el holdout temporal de 2017.}
+    \label{fig:final-models-roc}
+\end{figure}
+
 \subsection{Comparación operativa a igual capacidad}
 
 Sobre 2017 se identificaron 1.598 eventos críticos: 348 No-Show y 1.250
@@ -354,6 +367,19 @@ Logistic Regression fue la mejor alternativa para la evaluación crítica.
 Con capacidades de 20 y 30\,\% superó la selección aleatoria tanto en
 cantidad de eventos como en valor bruto. En 5 y 10\,\% detectó menos eventos
 que el azar, aunque capturó una proporción de valor bruto superior.
+
+La Figura~\ref{fig:operational-capacity-capture} permite observar esta
+diferencia para todas las capacidades evaluadas. La diagonal representa la
+captura esperada mediante una selección aleatoria: una curva por encima de esa
+referencia indica una concentración útil de eventos o de valor en los primeros
+lugares del ranking.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{operational_capacity_capture.png}
+    \caption{Captura de eventos críticos y de valor bruto según la capacidad operativa.}
+    \label{fig:operational-capacity-capture}
+\end{figure}
 
 \subsection{Diagnóstico del desalineamiento del objetivo}
 
